@@ -1,0 +1,76 @@
+Author: Alexandru Patriciu
+e-mail: apatriciu@gmail.com
+
+This is a small interface that allows OpenCL access from OpenStack.
+
+I tested the programs on a devstack install. The intalation folder for my configuration 
+was $NOVA_DIR = /opt/stack
+
+The interface consists of the following parts
+
+ComputeNode:
+- server side python programs
+    reside in $NOVA_DIR/nova/contrib/OpenCLServer
+- a shared library PyOpenCLInterface.so that exposes OpenCL to python calls.
+    
+Controller Node
+- nova compute api-extesion
+    - WSGI extension - reside in $NOVA_DIR/nova/nova/api/openstack/compute/contrib
+      unit tests are in $NOVA_DIR.nova/nova/tests/api/openstack/compute/contrib
+         these are not integrated yet into openstack tests but they are written 
+         using pyton unittest module. The user should run the tests to ensure that
+         the openCL interface is up.
+    - internal OpenCL API client - reside in $NOVA_DIR/nova/nova/OpenCL
+      unit tests in $NOVA_DIR/nova/nova/tests/OpenCL
+         these are not integrated yet into openstack tests but they are written 
+         using pyton unittest module. The user should run the tests to ensure that
+         the openCL interface is up.
+- python client
+    python sources are in $NOVA_DIR/novaclient/v1_1/contrib
+    small test programs $NOVA_DIR/novaclient/tests/v1_1/contrib
+
+Instalation:
+Step 1: Build the PyOpenCLInterface.so library;
+ - go to folder ServerSidePythonOpenCLInterface
+ - Set the include and lib folders to match your system in file OpenCLInterfaceSetup.py.
+ - Build the shared library.
+
+  $python OpenCLInterfaceSetup.py build
+
+  This should create PyOpenCLInterface.so in a subfolder 'build'. 
+ - Copy the shared library PyOpenCLInterface.so into the tests/ subfolder. 
+  Goto subfolder tests to run the unit tests for PyOpenCLInterface.
+  $cd tests
+  - Build the PyTestObjects.so shared lib.
+  $python TestObjectsSetup.py build
+  - Copy the shared library PyTestObjects into the tests folder. 
+  - Run the unit tests to ensure that the OpenCL is running properly.
+
+Step 2: Install the Compute node components
+ - Copy PyOpenCLInterface.so to $NOVA_DIR/nova/contrib/OpenCLServer
+ - Copy OpenCLServer.py to $NOVA_DIR/nova/contrib/OpenCLServer
+ - Copy queues.py from nova/nova/OpenCL to $NOVA_DIR/nova/OpenCL
+ - change the address of the amqp connection to match your configuration. This is in the __main__ 
+   of script OpenCLServer.py
+Step3: Install the controller components
+  Copy the python files for the resource extensions and unit tests into the nova directory structure.
+  Folders:
+  nova/nova/api/openstack/compute/contrib
+  nova/nova/OpenCL
+  nova/nova/tests/OpenCL
+  nova/nova/tests/api/openstack/compute/contrib
+  change the source and target messaging configuration for the rpc connection in 
+  $NOVA_DIR/nova/nova/OpenCL/OpenCLRPCAPI.py file (class OpenCLRPCAPI.__init__(...)). 
+Step 3: Copy the client python files into the novaclient folder.
+Step 4: Run the server on the compute node
+  python OpenCLServer.py
+Step 5: Run the opencl unit tests in folders
+  /nova/nova/tests/OpenCL/
+  /nova/nova/tests/api/openstack/compute/contrib/
+
+Step 4: Change the settings in TestcomputeOpenCL/credentials.py to match your configuration.
+Step 5: Run the samples in TestcomputeOpenCL.
+
+KNOWN ISSUES:
+- the OpenCLServer has to be manually started
+

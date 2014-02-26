@@ -1,0 +1,9 @@
+#!/bin/bash
+# This script copies the dll opencl server interface from current folder to nova instalation in the default folder. 
+# It is assumed that the directory structure matching the 
+# open-stack instalation is already in place.
+
+#copy the interface dll
+cp ./build/lib.linux-x86_64-2.7/PyOpenCLInterface.so /opt/stack/nova/contrib/OpenCLServer/PyOpenCLInterface.so 
+
+
