@@ -24,7 +24,7 @@ PyObject* _CL_CreateContext(PyObject* args){
   Devices = (cl_device_id*)malloc(nDevices * sizeof(cl_device_id));
   if(Devices == NULL) return NULL;
   for(ii = 0; ii < nDevices; ii++){
-    dev = GetCLDevice( PyInt_AsSsize_t( PyList_GET_ITEM(listDevices, ii) ) );
+    dev = GetCLDevice( PyInt_AsLong( PyList_GET_ITEM(listDevices, ii) ) );
     if(dev == NULL) return NULL;
     Devices[ii] = dev; 
   }
