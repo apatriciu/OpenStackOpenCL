@@ -83,25 +83,29 @@ PyObject* _CL_ReleaseKernel(PyObject* args){
 PyObject* 
 _CL_ListKernels(PyObject* args){
   long nKernels;
-  long* Kernels;
+  long* Kernels = NULL;
   long ii;
   PyObject* KernelList;
   PyObject* KernelID;
   nKernels = GetNumberOfKernels();
   Kernels = (long*)malloc(nKernels * sizeof(long));
-  if(Kernels == NULL) return NULL;
+  if(Kernels == NULL) goto returnNULL;
   GetKernelsIDs(Kernels);
   KernelList = PyList_New(nKernels);
-  if(KernelList == NULL) return NULL;
+  if(KernelList == NULL) goto returnNULL;
   for(ii = 0; ii < nKernels; ii++){
     KernelID = PyInt_FromLong(Kernels[ii]);
     if(KernelID == NULL){
       Py_DECREF(KernelList);
-      return NULL;
+      goto returnNULL;
       }
     PyList_SET_ITEM(KernelList, ii, KernelID);
   }
+  free(Kernels);
   return KernelList;
+returnNULL:
+  free(Kernels);
+  return NULL;
 }
 
 PyObject* _CL_KernelSetArgument(PyObject* args){

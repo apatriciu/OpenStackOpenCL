@@ -115,25 +115,29 @@ PyObject* _CL_ReleaseProgram(PyObject* args){
 PyObject* 
 _CL_ListPrograms(PyObject* args){
   long nPrograms;
-  long* Programs;
+  long* Programs = NULL;
   long ii;
   PyObject* ProgramList;
   PyObject* ProgramID;
   nPrograms = GetNumberOfPrograms();
   Programs = (long*)malloc(nPrograms * sizeof(long));
-  if(Programs == NULL) return NULL;
+  if(Programs == NULL) goto returnNULL;
   GetProgramsIDs(Programs);
   ProgramList = PyList_New(nPrograms);
-  if(ProgramList == NULL) return NULL;
+  if(ProgramList == NULL) goto returnNULL;
   for(ii = 0; ii < nPrograms; ii++){
     ProgramID = PyInt_FromLong(Programs[ii]);
     if(ProgramID == NULL){
       Py_DECREF(ProgramList);
-      return NULL;
+      goto returnNULL;
       }
     PyList_SET_ITEM(ProgramList, ii, ProgramID);
   }
+  free(Programs);
   return ProgramList;
+returnNULL:
+  free(Programs);
+  return NULL;
 }
 
 PyObject* _CL_BuildProgram(PyObject* args){

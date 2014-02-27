@@ -72,24 +72,28 @@ PyObject* _CL_ReleaseBuffer(PyObject* args){
 PyObject* 
 _CL_ListBuffers(PyObject* args){
   long nBuffers;
-  long* Buffers;
+  long* Buffers = NULL;
   long ii;
   PyObject* BufferList;
   PyObject* BufferID;
   nBuffers = GetNumberOfMems();
   Buffers = (long*)malloc(nBuffers * sizeof(long));
-  if(Buffers == NULL) return NULL;
+  if(Buffers == NULL) goto returnNULL;
   GetMemsIDs(Buffers);
   BufferList = PyList_New(nBuffers);
-  if(BufferList == NULL) return NULL;
+  if(BufferList == NULL) goto returnNULL;
   for(ii = 0; ii < nBuffers; ii++){
     BufferID = PyInt_FromLong(Buffers[ii]);
     if(BufferID == NULL){
       Py_DECREF(BufferList);
-      return NULL;
+      goto returnNULL;
       }
     PyList_SET_ITEM(BufferList, ii, BufferID);
   }
+  free(Buffers);
   return BufferList;
+returnNULL:
+  free(Buffers);
+  return NULL;
 }
 

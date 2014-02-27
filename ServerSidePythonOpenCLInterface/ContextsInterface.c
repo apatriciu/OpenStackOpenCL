@@ -16,20 +16,20 @@ PyObject* _CL_CreateContext(PyObject* args){
   cl_int ErrCode;
 
   if(!PyArg_ParseTuple(args, "OO", &listDevices, &dictContextProperties) )
-    return NULL;
+    goto returnNULL;
   // test parameters
-  if(!PyList_Check(listDevices)) return NULL;
+  if(!PyList_Check(listDevices)) goto returnNULL;
   // unpack list devices
   nDevices = PyList_Size(listDevices);
   Devices = (cl_device_id*)malloc(nDevices * sizeof(cl_device_id));
-  if(Devices == NULL) return NULL;
+  if(Devices == NULL) goto returnNULL;
   for(ii = 0; ii < nDevices; ii++){
     dev = GetCLDevice( PyInt_AsLong( PyList_GET_ITEM(listDevices, ii) ) );
-    if(dev == NULL) return NULL;
+    if(dev == NULL) goto returnNULL;
     Devices[ii] = dev; 
   }
   properties = (cl_context_properties*)malloc(3 * sizeof(cl_context_properties));
-  if(properties == NULL) return NULL;
+  if(properties == NULL) goto returnNULL;
   properties[0] = CL_CONTEXT_PLATFORM;
   properties[1] = (cl_context_properties)GetCLPlatform(0);
   properties[2] = 0;
@@ -46,6 +46,10 @@ PyObject* _CL_CreateContext(PyObject* args){
   free(properties);  
   return Py_BuildValue("ii", idContext, ErrCode);
   returnErr: 
+    free(Devices);
+    free(properties);
+    return Py_BuildValue("ii", 0, ErrCode);
+  returnNULL:
     free(Devices);
     free(properties);
     return NULL;
@@ -112,25 +116,28 @@ PyObject* _CL_ReleaseContext(PyObject* args){
 PyObject* 
 _CL_ListContexts(PyObject* args){
   long nContexts;
-  long* Contexts;
+  long* Contexts = NULL;
   long ii;
   PyObject* ContextList;
   PyObject* ContextID;
   nContexts = GetNumberOfContexts();
   Contexts = (long*)malloc(nContexts * sizeof(long));
-  if(Contexts == NULL) return NULL;
+  if(Contexts == NULL) goto returnNULL;
   GetContextsIDs(Contexts);
   ContextList = PyList_New(nContexts);
-  if(ContextList == NULL) return NULL;
+  if(ContextList == NULL) goto returnNULL;
   for(ii = 0; ii < nContexts; ii++){
     ContextID = PyInt_FromLong(Contexts[ii]);
     if(ContextID == NULL){
       Py_DECREF(ContextList);
-      return NULL;
+      goto returnNULL;
       }
     PyList_SET_ITEM(ContextList, ii, ContextID);
   }
+  free(Contexts);
   return ContextList;
+returnNULL:
+  free(Contexts);
+  return NULL;
 }
-
 

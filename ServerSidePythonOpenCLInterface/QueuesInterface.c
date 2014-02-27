@@ -84,25 +84,29 @@ PyObject* _CL_ReleaseQueue(PyObject* args){
 PyObject* 
 _CL_ListQueues(PyObject* args){
   long nQueues;
-  long* Queues;
+  long* Queues = NULL;
   long ii;
   PyObject* QueueList;
   PyObject* QueueID;
   nQueues = GetNumberOfCommandQueues();
   Queues = (long*)malloc(nQueues * sizeof(long));
-  if(Queues == NULL) return NULL;
+  if(Queues == NULL) goto returnNULL;
   GetCommandQueuesIDs(Queues);
   QueueList = PyList_New(nQueues);
-  if(QueueList == NULL) return NULL;
+  if(QueueList == NULL) goto returnNULL;
   for(ii = 0; ii < nQueues; ii++){
     QueueID = PyInt_FromLong(Queues[ii]);
     if(QueueID == NULL){
       Py_DECREF(QueueList);
-      return NULL;
+      goto returnNULL;
       }
     PyList_SET_ITEM(QueueList, ii, QueueID);
   }
+  free(Queues);
   return QueueList;
+returnNULL:
+  free(Queues);
+  return NULL;
 }
 
 PyObject*

@@ -77,10 +77,10 @@ def ShiftImage(inputimage, size, dx, dy):
 
 def get_nova_creds():
     d = {}
-    d['username'] = "admin"
-    d['api_key'] = "supersecret"
-    d['auth_url'] = "http://192.168.2.20:35357/v2.0"
-    d['project_id'] = "admin"
+    d['username'] = ""
+    d['api_key'] = ""
+    d['auth_url'] = ""
+    d['project_id'] = ""
     return d
 
 def GetOpenStackClient():
@@ -161,8 +161,8 @@ def ImageFlowOpenCL(mat1, mat2, imagesize, kernelsize, deviceType):
     #    print "Maximum image size is 128"
     #    return [], []
     deviceIndex = 0
-    blocksize = 8
-    memorytransferslice = 32768
+    blocksize = 16
+    memorytransferslice = 16384
     if (imagesize % blocksize != 0):
         print "The image size should be a multiple of ", blocksize
         return [], []
@@ -355,6 +355,7 @@ def ImageFlowOpenCL(mat1, mat2, imagesize, kernelsize, deviceType):
     fx = ""
     startSlice = 0
     while startSlice < bufferSize:
+        print "Copying Buffer 2: startSlice ", startSlice
         endSlice = startSlice + memorytransferslice
         if endSlice > bufferSize:
             endSlice = bufferSize
@@ -380,6 +381,7 @@ def ImageFlowOpenCL(mat1, mat2, imagesize, kernelsize, deviceType):
     fy = ""
     startSlice = 0
     while startSlice < bufferSize:
+        print "Copying Buffer 3: startSlice ", startSlice
         endSlice = startSlice + memorytransferslice
         if endSlice > bufferSize:
             endSlice = bufferSize
@@ -402,7 +404,6 @@ def ImageFlowOpenCL(mat1, mat2, imagesize, kernelsize, deviceType):
         cl.openclcontexts.release(contextID)
         return [], []
     flowy = bytearray(fy)
-    print bufferSize
     # convert to ints
     listflowx = ByteArray2IntArray(flowx)
     listflowy = ByteArray2IntArray(flowy)
@@ -415,16 +416,17 @@ def ImageFlowOpenCL(mat1, mat2, imagesize, kernelsize, deviceType):
     return listflowx, listflowy    
 
 if __name__ == "__main__":
-    imagesize = 1024
-    kernelsize = 4
+    imagesize = 64
+    kernelsize = 3
     dx = 1
     dy = 1
     mat1 = getRandomMatrix(imagesize)
     mat2 = ShiftImage(mat1, imagesize, dx, dy)
     #print "Mat Input : ", mat
-    # for ii in range(0, 1000):
-    #    print " --------------- Run # ", ii, " ---------------------"
-    resMat1, resMat2 = ImageFlowOpenCL(mat1, mat2, imagesize, kernelsize, "GPU")
+    for ii in range(0, 1):
+        print " --------------- Run # ", ii, " ---------------------"
+        resMat1, resMat2 = ImageFlowOpenCL(mat1, mat2, 
+                                 imagesize, kernelsize, "GPU")
     #print "Mat Output : ", resMat
     #print "resMat1 = ", resMat1
     #print "resMat2 = ", resMat2

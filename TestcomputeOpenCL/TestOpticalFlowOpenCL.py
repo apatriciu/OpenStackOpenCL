@@ -77,10 +77,10 @@ def ShiftImage(inputimage, size, dx, dy):
 
 def get_nova_creds():
     d = {}
-    d['username'] = "admin"
-    d['api_key'] = "supersecret"
-    d['auth_url'] = "http://192.168.2.20:35357/v2.0"
-    d['project_id'] = "admin"
+    d['username'] = ""
+    d['api_key'] = ""
+    d['auth_url'] = ""
+    d['project_id'] = ""
     return d
 
 def GetOpenStackClient():
@@ -359,14 +359,14 @@ def ImageFlowOpenCL(mat1, mat2, imagesize, kernelsize, deviceType):
     return listflowx, listflowy    
 
 if __name__ == "__main__":
-    imagesize = 128
+    imagesize = 64
     kernelsize = 2
     dx = 1
     dy = 1
     mat1 = getRandomMatrix(imagesize)
     mat2 = ShiftImage(mat1, imagesize, dx, dy)
     #print "Mat Input : ", mat
-    for ii in range(0, 1000):
+    for ii in range(0, 1):
         print " --------------- Run # ", ii, " ---------------------"
         resMat1, resMat2 = ImageFlowOpenCL(mat1, mat2, imagesize, kernelsize, "GPU")
     #print "Mat Output : ", resMat
