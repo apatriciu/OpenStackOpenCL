@@ -3,10 +3,9 @@ import os
 
 def get_nova_creds():
     d = {}
-    d['username'] = "admin"
-    d['api_key'] = "supersecret"
-    d['auth_url'] = "http://192.168.2.22:35357/v2.0"
-    d['project_id'] = "admin"
+    d['username'] = os.environ['OS_USERNAME']
+    d['api_key'] = os.environ['OS_PASSWORD']
+    d['auth_url'] = os.environ['OS_AUTH_URL']
+    d['project_id'] = os.environ['OS_TENANT_NAME']
     return d
-
 
