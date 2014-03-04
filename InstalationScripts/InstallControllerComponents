@@ -1,0 +1,9 @@
+#!/bin/bash
+SOURCE_DIR="../computeOpenCL/nova/nova"
+DEST_DIR="/opt/stack/nova/nova"
+
+cp $SOURCE_DIR/OpenCL/* $DEST_DIR/OpenCL/
+cp $SOURCE_DIR/api/openstack/compute/contrib/* $DEST_DIR/api/openstack/compute/contrib/
+cp $SOURCE_DIR/tests/OpenCL/* $DEST_DIR/tests/OpenCL/
+cp $SOURCE_DIR/tests/api/openstack/compute/contrib/* $DEST_DIR/tests/api/openstack/compute/contrib/
+

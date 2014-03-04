@@ -8,15 +8,29 @@ import OpenCLClientException
 from nova.openstack.common.gettextutils import _
 from nova.openstack.common import log as logging
 from kombu.utils import uuid
+from oslo.config import cfg
 
 LOG = logging.getLogger(__name__)
 
+CONF = cfg.CONF
+
 class OpenCLRPCAPI(object):
     def __init__(self, routing_key, exchange, respQueueName, target = None, source = None, timeout = None):
-        if not target:
-            self._target = "amqp://guest:supersecret@192.168.2.20:5672//"
-        if not source:
-            self._source = "amqp://guest:supersecret@192.168.2.20:5672//"
+        try:
+            config_file = CONF.config_file[0]
+        except AttributeError:
+            config_file = "/etc/nova/nova.conf"
+        configs = cfg.ConfigOpts()
+        options = [ cfg.StrOpt('rabbit_host', default = 'localhost'),
+                    cfg.StrOpt('rabbit_password', required = 'true'),
+                    cfg.StrOpt('rabbit_user', default = 'guest')]
+        configs.register_opts( options )
+        params_config = ['--config-file', config_file]     
+        configs(params_config)
+        rh = configs.rabbit_host
+        rp = configs.rabbit_password
+        ru = configs.rabbit_user
+        self._strBroker = "amqp://" + ru + ":" + rp + "@" + rh + ":5672//"
         if not timeout:
             self._timeout = 1
         self._routing_key = routing_key
@@ -25,10 +39,11 @@ class OpenCLRPCAPI(object):
 
     def CallServer(self, method, args = None):
         try:
-            connection = BrokerConnection(self._target)
+            LOG.debug(_("strBroker : %s "), self._strBroker)
+            connection = BrokerConnection(self._strBroker)
             # create the response channel
             respQueueName = self._respQueueName + str(uuid())
-            respconnection = BrokerConnection(self._source)
+            respconnection = BrokerConnection(self._strBroker)
             respQueue = respconnection.SimpleQueue(respQueueName,
                                   queue_opts = {'durable': False, 'auto_delete': True},
                                   exchange_opts = {'delivery_mode' : 1,
@@ -36,7 +51,7 @@ class OpenCLRPCAPI(object):
                                                    'durable' : False})
             with producers[connection].acquire(block=True) as producer:
                 maybe_declare(task_exchange, producer.channel)
-                payload = {"RespQueue": respQueueName, "Source": self._source, 'Method': method, 'args': args}
+                payload = {"RespQueue": respQueueName, "Source": self._strBroker, 'Method': method, 'args': args}
                 producer.publish(payload, exchange = self._exchange, serializer="json", routing_key = self._routing_key)
             # wait for the response
             resp_message = respQueue.get(block=True, timeout=1)

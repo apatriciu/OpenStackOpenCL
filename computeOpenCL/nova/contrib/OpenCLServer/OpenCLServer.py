@@ -1,11 +1,12 @@
-from nova.OpenCL.queues import queue_opencl_devices
-from nova.OpenCL.queues import queue_opencl_contexts
-from nova.OpenCL.queues import queue_opencl_buffers
-from nova.OpenCL.queues import queue_opencl_programs
-from nova.OpenCL.queues import queue_opencl_kernels
-from nova.OpenCL.queues import queue_opencl_command_queues
-from nova.OpenCL.queues import queue_opencl_notify
+from queues import queue_opencl_devices
+from queues import queue_opencl_contexts
+from queues import queue_opencl_buffers
+from queues import queue_opencl_programs
+from queues import queue_opencl_kernels
+from queues import queue_opencl_command_queues
+from queues import queue_opencl_notify
 import sys
+from oslo.config import cfg
 import PyOpenCLInterface
 from kombu.mixins import ConsumerMixin
 import binascii
@@ -567,11 +568,24 @@ if __name__ == "__main__":
     
     setup_logging(loglevel="DEBUG")
 
+    configs = cfg.ConfigOpts()
+    options = [ cfg.StrOpt('rabbit_host', default = 'localhost'),
+                cfg.StrOpt('rabbit_password', required = 'true'),
+                cfg.StrOpt('rabbit_user', default = 'guest')]
+    configs.register_opts( options )
+    configs(sys.argv[1:])
+
+    rh = configs.rabbit_host
+    rp = configs.rabbit_password
+    ru = configs.rabbit_user
+
+    strBroker = "amqp://" + ru + ":" + rp + "@" + rh + ":5672//"
+
     retErr = PyOpenCLInterface.Initialize("GPU")
     if retErr != 0:
         print "Error could not initialize OpenCL interface"
     else:
-        with BrokerConnection("amqp://guest:supersecret@192.168.2.20:5672//") as connection:
+        with BrokerConnection(strBroker) as connection:
             try:
                 C(connection).run()
             except KeyboardInterrupt:

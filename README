@@ -47,20 +47,23 @@ Step 1: Build the PyOpenCLInterface.so library;
   - Run the unit tests to ensure that the OpenCL is running properly.
 
 Step 2: Install the Compute node components
- - Copy PyOpenCLInterface.so to $NOVA_DIR/nova/contrib/OpenCLServer
- - Copy OpenCLServer.py to $NOVA_DIR/nova/contrib/OpenCLServer
- - Copy queues.py from nova/nova/OpenCL to $NOVA_DIR/nova/OpenCL
- - change the address of the amqp connection to match your configuration. This is in the __main__ 
-   of script OpenCLServer.py
+ - go to folder InstalationScripts
+ - make sure that the target folder in the script InstallServer is properly set
+ $./InstallServer
+ - The server is started using the script StartServer from the target directory
+ - By default the server loads the amqp configuration from /etc/nova/nova.conf. If this doesn't
+ correspond to your settings you have to change the StartServer script to load the proper 
+ configuration file. In settings the rabbit options are under the [DEFAULT] section.
+ If in your configuration the rabbit options are under Group [Rabbit] you will have to 
+ change how the options are loaded.
 Step3: Install the controller components
+  - go to folder InstalationScripts
+  - verify if the instalation directories in the script InstallControllerComponents match 
+  your configuration.
+  - run the script InstallControllerComponents
   Copy the python files for the resource extensions and unit tests into the nova directory structure.
-  Folders:
-  nova/nova/api/openstack/compute/contrib
-  nova/nova/OpenCL
-  nova/nova/tests/OpenCL
-  nova/nova/tests/api/openstack/compute/contrib
-  change the source and target messaging configuration for the rpc connection in 
-  $NOVA_DIR/nova/nova/OpenCL/OpenCLRPCAPI.py file (class OpenCLRPCAPI.__init__(...)). 
+  The rabbit options are loaded from the nova config file.
+  You can hack and manually set them in class OpenCLRPCAPI.__init__(...)). 
 Step 3: Copy the client python files into the novaclient folder.
 Step 4: Run the server on the compute node
   python OpenCLServer.py
@@ -68,9 +71,16 @@ Step 5: Run the opencl unit tests in folders
   /nova/nova/tests/OpenCL/
   /nova/nova/tests/api/openstack/compute/contrib/
 
-Step 4: Change the settings in TestcomputeOpenCL/credentials.py to match your configuration.
+Step 4: Add the following environment variables on the client side describing the credentials
+    OS_USERNAME
+    OS_PASSWORD
+    OS_AUTH_URL
+    OS_TENANT_NAME
+
 Step 5: Run the samples in TestcomputeOpenCL.
 
 KNOWN ISSUES:
 - the OpenCLServer has to be manually started
+- the data transfer is curently implemented using amqp. The MemRead and Write operations should be 
+implemented using Swift
 

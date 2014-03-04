@@ -1,5 +1,0 @@
-declare -x OS_USERNAME="admin"
-declare -x OS_PASSWORD="supersecret"
-declare -x OS_AUTH_URL="http://192.168.2.22:35357/v2.0"
-declare -x OS_TENANT_NAME="admin"
-

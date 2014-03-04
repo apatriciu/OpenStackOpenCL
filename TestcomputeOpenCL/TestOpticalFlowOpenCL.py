@@ -12,6 +12,7 @@ from novaclient.v1_1.contrib import openclqueues
 from binascii import unhexlify
 from binascii import hexlify
 import random
+import os
 
 def getRandomMatrix(sizeImage):
     retVal = list(range(0, sizeImage*sizeImage))

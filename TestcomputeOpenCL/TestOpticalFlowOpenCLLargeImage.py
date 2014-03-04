@@ -12,6 +12,7 @@ from novaclient.v1_1.contrib import openclqueues
 from binascii import unhexlify
 from binascii import hexlify
 import random
+import os
 
 def getRandomMatrix(sizeImage):
     retVal = list(range(0, sizeImage*sizeImage))
@@ -77,7 +78,7 @@ def ShiftImage(inputimage, size, dx, dy):
 
 def get_nova_creds():
     d = {}
-    d['username'] = os.environ['OS_USERNAME'] 
+    d['username'] = os.environ['OS_USERNAME']
     d['api_key'] = os.environ['OS_PASSWORD']
     d['auth_url'] = os.environ['OS_AUTH_URL']
     d['project_id'] = os.environ['OS_TENANT_NAME']

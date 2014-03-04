@@ -1,0 +1,9 @@
+#!/bin/bash
+SOURCE_DIR=".."
+DEST_DIR="/opt/stack/nova/contrib/OpenCLServer/"
+
+cp $SOURCE_DIR/ServerSidePythonOpenCLInterface/build/lib.linux-x86_64-2.7/PyOpenCLInterface.so $DEST_DIR
+cp $SOURCE_DIR/computeOpenCL/nova/contrib/OpenCLServer/OpenCLServer.py $DEST_DIR
+cp $SOURCE_DIR/computeOpenCL/nova/contrib/OpenCLServer/StartServer $DEST_DIR
+cp $SOURCE_DIR/computeOpenCL/nova/nova/OpenCL/queues.py $DEST_DIR
+
