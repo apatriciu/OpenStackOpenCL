@@ -1,25 +1,9 @@
 # test OpenCL extension for nova compute service
 
 import math
+from openclclient import client
 
-from novaclient import extension
-from novaclient.v1_1 import client
-from novaclient.v1_1 import services
-from novaclient import utils
-from novaclient.v1_1.contrib import list_extensions
-from novaclient.v1_1.contrib import openclcontexts
-from novaclient.v1_1.contrib import opencldevices
-from novaclient.v1_1.contrib import openclprograms
-
-from credentials import get_nova_creds
-
-creds = get_nova_creds()
-extensions = [
-    extension.Extension(openclcontexts.__name__.split(".")[-1], openclcontexts),
-    extension.Extension(opencldevices.__name__.split(".")[-1], opencldevices),
-    extension.Extension(openclprograms.__name__.split(".")[-1], openclprograms),
-    ]
-cl = client.Client(http_log_debug = True, extensions=extensions, **creds)
+cl = client.Client()
 
 print "Create a Context: "
 devices = [0, ]

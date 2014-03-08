@@ -1,14 +1,4 @@
-from novaclient import extension
-from novaclient.v1_1 import client
-from novaclient.v1_1 import services
-from novaclient import utils
-from novaclient.v1_1.contrib import list_extensions
-from novaclient.v1_1.contrib import openclcontexts
-from novaclient.v1_1.contrib import opencldevices
-from novaclient.v1_1.contrib import openclprograms
-from novaclient.v1_1.contrib import openclbuffers
-from novaclient.v1_1.contrib import openclkernels
-from novaclient.v1_1.contrib import openclqueues
+from openclclient import client
 from binascii import unhexlify
 from binascii import hexlify
 import random
@@ -76,25 +66,8 @@ def ShiftImage(inputimage, size, dx, dy):
                 outputimage[row*size + col] = 0
     return outputimage
 
-def get_nova_creds():
-    d = {}
-    d['username'] = os.environ['OS_USERNAME']
-    d['api_key'] = os.environ['OS_PASSWORD']
-    d['auth_url'] = os.environ['OS_AUTH_URL']
-    d['project_id'] = os.environ['OS_TENANT_NAME']
-    return d
-
 def GetOpenStackClient():
-    creds = get_nova_creds()
-    extensions = [
-        extension.Extension(openclcontexts.__name__.split(".")[-1], openclcontexts),
-        extension.Extension(opencldevices.__name__.split(".")[-1], opencldevices),
-        extension.Extension(openclprograms.__name__.split(".")[-1], openclprograms),
-        extension.Extension(openclbuffers.__name__.split(".")[-1], openclbuffers),
-        extension.Extension(openclkernels.__name__.split(".")[-1], openclkernels),
-        extension.Extension(openclqueues.__name__.split(".")[-1], openclqueues),
-        ]
-    return client.Client(http_log_debug = True, extensions=extensions, **creds)
+    return client.Client()
 
 kernelCode = """
 __kernel void opticalflowkernel(__global int *image1, 

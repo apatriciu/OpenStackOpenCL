@@ -23,16 +23,20 @@ class OpenCLCommandQueuesRPCAPI(OpenCLRPCAPI.OpenCLRPCAPI):
     def RetainCommandQueue(self, id):
         return self.CallServer('RetainCommandQueue', {'id': id})
 
-    def EnqueueReadBuffer(self, id, membuffer, bytecount, offset):
+    def EnqueueReadBuffer(self, id, membuffer, bytecount, offset, containerid, swiftcontext):
         return self.CallServer('EnqueueReadBuffer', {'id': id, 'MemBuffer': membuffer,
                                                      'ByteCount': bytecount,
-                                                     'Offset': offset})
+                                                     'Offset': offset,
+                                                     'ContainerId': containerid,
+                                                     'SwiftContext': swiftcontext})
 
-    def EnqueueWriteBuffer(self, id, membuffer, bytecount, offset, data):
+    def EnqueueWriteBuffer(self, id, membuffer, bytecount, offset, dataobjectid, containerid, swiftcontext):
         return self.CallServer('EnqueueWriteBuffer', {'id': id, 'MemBuffer': membuffer,
                                                      'ByteCount': bytecount,
                                                      'Offset': offset,
-                                                     'Data': data})
+                                                     'DataObjectId': dataobjectid,
+                                                     'ContainerId': containerid,
+                                                     'SwiftContext': swiftcontext})
 
     def EnqueueCopyBuffer(self, id, sourcebuffer, destinationbuffer,
                                   sourceoffset, destinationoffset, bytecount):

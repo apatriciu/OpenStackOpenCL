@@ -9,6 +9,7 @@ import sys
 from oslo.config import cfg
 import PyOpenCLInterface
 from kombu.mixins import ConsumerMixin
+from kombu.utils import uuid
 import binascii
 
 def DispatchDevices(method, args):
@@ -315,32 +316,41 @@ def DispatchCommandQueues(method, args):
             membuffer = int(args['MemBuffer'])
             bytecount = int(args['ByteCount'])
             offset = int(args['Offset'])
+            container = args['ContainerId']
+            swift_context = args['SwiftContext']
+            url, token = cs.get_keystoneclient_2_0(auth_url, 
+                                                   swift_context[UserName],
+                                                   swift_context[Password],
+                                                   {'tenant_name': swift_context['TenantName']})
             RawData, RetErr = PyOpenCLInterface.EnqueueReadBuffer(nid, membuffer, bytecount, offset)
-            # RawData is a byte array of length ByteCount; We have to divide 
-            # RawData in 57 bytes slices and convert to base64
-            Data = ""
-            StartPosition = 0
-            while StartPosition < bytecount:
-                EndPosition = StartPosition + 57
-                if EndPosition > bytecount:
-                    EndPosition = bytecount
-                Data2Convert = bytearray(RawData[StartPosition : EndPosition])
-                StartPosition = EndPosition
-                base64Data = binascii.b2a_base64(Data2Convert)
-                Data = Data + base64Data
+            # put data in the container
+            data_length = len(RawData)
+            DataObjectId = str(uuid())
+            cs.put_object(url = url, token = token, container = container, 
+                          name = DataObjectId, contents = RawData, 
+                          content_length = data_length)
         except:
             print "Exception caught in DispatchCommandQueues.%s " % method
             print "Exception info %s " %  sys.exc_info()[0] 
             return -128
-        return (Data, RetErr)
+        return (DataObjectId, RetErr)
     if method == 'EnqueueWriteBuffer':
         try:
             nid = int(args['id'])
             membuffer = int(args['MemBuffer'])
             bytecount = int(args['ByteCount'])
             offset = int(args['Offset'])
+            swift_container = args['ContainerId']
+            swift_object = args['DataObjectId']
+            swift_context = args['SwiftContext']
             # unpack the data
-            data = bytearray(binascii.a2b_base64( str(args['Data'] )))
+            url, token = cs.get_keystoneclient_2_0(auth_url,
+                                                   swift_context[UserName],
+                                                   swift_context[Password],
+                                                   {'tenant_name': swift_context['TenantName']})
+            respDict, respObject = cs.get_object(url = url, token = token, container = container,
+                                                 name = swift_object)
+            data = bytearray(respobject)
             result = PyOpenCLInterface.EnqueueWriteBuffer(nid, membuffer, bytecount, offset, data)
         except:
             print "Exception caught in DispatchCommandQueues.%s " % method
@@ -571,13 +581,15 @@ if __name__ == "__main__":
     configs = cfg.ConfigOpts()
     options = [ cfg.StrOpt('rabbit_host', default = 'localhost'),
                 cfg.StrOpt('rabbit_password', required = 'true'),
-                cfg.StrOpt('rabbit_user', default = 'guest')]
+                cfg.StrOpt('rabbit_user', default = 'guest'), 
+                sfg.StrOpt('auth_host', group = 'keystone_authtoken', default = 'local')]
     configs.register_opts( options )
     configs(sys.argv[1:])
 
     rh = configs.rabbit_host
     rp = configs.rabbit_password
     ru = configs.rabbit_user
+    auth_url = "http://" + configs.auth_host + ":35357/v2.0"
 
     strBroker = "amqp://" + ru + ":" + rp + "@" + rh + ":5672//"
 

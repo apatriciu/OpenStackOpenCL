@@ -144,13 +144,16 @@ class OpenCLQueues(object):
             Buffer = int(body['Buffer'])
             Offset = int(body['Offset'])
             ByteCount = int(body['ByteCount'])
+            ContainerId = body['ContainerId']
+            SwiftContext = body['SwiftContext']
             Data, nErr = self.opencl_command_queues_api.EnqueueReadBuffer(int(id), 
-                                               Buffer, ByteCount, Offset)
+                                               Buffer, ByteCount, Offset,
+                                               ContainerId, SwiftContext)
         except:
             LOG.debug(_("Exception caught in OpenCLQueues.enqueuereadbuffer method %s"), sys.exc_info()[0])
             print("Exception caught in OpenCLQueues.enqueuereadbuffer method %s" % sys.exc_info()[0])
             raise exc.HTTPNotFound()
-        return {'ReadBufferResp': {'CL_ERROR_CODE': nErr, 'Data': Data}}
+        return {'ReadBufferResp': {'CL_ERROR_CODE': nErr, 'DataObject': Data}}
 
     @wsgi.response(202)
     @wsgi.serializers(xml=os_openclutils.OpenCLErrorResp)
@@ -165,10 +168,14 @@ class OpenCLQueues(object):
             Buffer = int(body['Buffer'])
             Offset = int(body['Offset'])
             ByteCount = int(body['ByteCount'])
-            Data = str(body['Data'])
+            DataObjectId = str(body['ObjectId'])
+            ContainerId = str(body['ContainerId'])
+            SwiftContext = str(body['SwiftContext'])
             nErr = self.opencl_command_queues_api.EnqueueWriteBuffer(int(id), 
                                   Buffer, ByteCount, 
-                                  Offset, Data)
+                                  Offset, DataObjectId,
+                                  ContainerId, 
+                                  SwiftContext)
         except:
             LOG.debug(_("Exception caught in OpenCLQueues.enqueuewritebuffer method %s"), sys.exc_info()[0])
             raise exc.HTTPNotFound()

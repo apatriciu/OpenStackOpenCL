@@ -6,4 +6,6 @@ cp $SOURCE_DIR/OpenCL/* $DEST_DIR/OpenCL/
 cp $SOURCE_DIR/api/openstack/compute/contrib/* $DEST_DIR/api/openstack/compute/contrib/
 cp $SOURCE_DIR/tests/OpenCL/* $DEST_DIR/tests/OpenCL/
 cp $SOURCE_DIR/tests/api/openstack/compute/contrib/* $DEST_DIR/tests/api/openstack/compute/contrib/
+#copy SwiftTestUtils.py to api test folder
+cp $SOURCE_DIR/tests/OpenCL/SwiftTestUtils.py $DEST_DIR/tests/api/openstack/compute/contrib/
 

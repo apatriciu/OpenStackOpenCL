@@ -59,15 +59,28 @@ class OpenclqueuesinterfaceTest(object):
         q_id = 1
         b_id = 1
         bc = 128
-        ocs = cs.openclqueues.enqueuereadbuffer(queue_id=q_id, buffer_id=b_id, ByteCount=bc)
+        username = 'asdf'
+        password = 'asdf'
+        tenantid = 'asdf'
+        container = 'dummy'
+        ocs = cs.openclqueues.enqueuereadbuffer(queue_id=q_id, buffer_id=b_id, ByteCount=bc,
+                                                os_user_name=username, os_password=password,
+                                                os_tenant_name=tenant_id, container_id=container)
         cs.assert_called('POST', '/os-openclqueues/%d/enqueuereadbuffer' % q_id)
 
     def test_queue_enqueuewritebuffer(self):
         q_id = 1
         b_id = 1
         bc = 128
-        dt = 'ABCD123'
-        ocs = cs.openclqueues.enqueuewritebuffer(queue_id=q_id, buffer_id=b_id, ByteCount=bc, data=dt)
+        data_object_id = 'ABCD123'
+        container_id = 'asdf'
+        username = 'asdf'
+        password = 'asdf'
+        tenantid = 'asdf'
+        ocs = cs.openclqueues.enqueuewritebuffer(queue_id=q_id, buffer_id=b_id, ByteCount=bc, 
+                                                 os_user_name=username, os_password=password,
+                                                 os_tenant_name=tenant_id, container_id=container
+                                                 data_object_id=data_object_id)
         cs.assert_called('POST', '/os-openclqueues/%d/enqueuewritebuffer' % q_id)
 
     def test_queue_enqueuecopybuffer(self):

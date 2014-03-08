@@ -74,38 +74,43 @@ class OpenCLQueuesManager(base.Manager):
         body = None
         return self._create(url, body, "CL_ERROR_CODE", return_raw=True)
         
-    def enqueuereadbuffer(self, queue_id, buffer_id, ByteCount, blocking_read=True, Offset=0,
+    def enqueuereadbuffer(self, queue_id, buffer_id, ByteCount,
+                          os_user_name, os_password,
+                          os_tenant_name, container_id,
+                          blocking_read=True, Offset=0,
                           wait_event_list=None, done_event=None):
         """
         enqueue a read buffer operation
         """
         url = "/os-openclqueues/%d/enqueuereadbuffer" % queue_id
         body = {'Buffer': buffer_id,
-                'Offset': Offset, 'ByteCount': ByteCount}
+                'Offset': Offset, 'ByteCount': ByteCount,
+                'SwiftContext': {'UserName': os_user_name, 
+                                 'Password': os_password,
+                                  'TenantName': os_tenant_name}, 
+                'ContainerId': container_id}
         resp = self._create(url, body, "ReadBufferResp", return_raw=True)
-        binaryData = bytearray(binascii.a2b_base64( str(resp['Data']) ))
-        return (binaryData, resp['CL_ERROR_CODE'])
+        return (resp['DataObject'], resp['CL_ERROR_CODE'])
  
-    def enqueuewritebuffer(self, queue_id, buffer_id, ByteCount, data, blocking_write=True, Offset=0,
-                          wait_event_list=None, done_event=None):
+    def enqueuewritebuffer(self, queue_id, buffer_id, ByteCount, 
+                           data_object_id, container_id, 
+                           os_user_name, os_password,
+                           os_tenant_name, 
+                           blocking_write=True, Offset=0,
+                           wait_event_list=None, done_event=None):
         """
         enqueue a write buffer operation
         """
         url = "/os-openclqueues/%d/enqueuewritebuffer" % queue_id
         # we assume that data is bytearray; we have to convert to base64
-        base64data = ""
-        StartPosition = 0
-        while StartPosition < ByteCount:
-            EndPosition = StartPosition + 57
-            if EndPosition > ByteCount:
-                EndPosition = ByteCount
-            Data2Convert = bytearray(data[StartPosition : EndPosition])
-            StartPosition = EndPosition
-            base64Slice = binascii.b2a_base64(Data2Convert)
-            base64data = base64data + base64Slice
         body = {'Buffer': buffer_id,
                 'Offset': Offset, 'ByteCount': ByteCount,
-                'Data': base64data}
+                'ObjectId': data_object_id,
+                'ContainerId': container_id, 
+                'SwiftContext': {'UserName': os_user_name,
+                                 'TenantName': os_tenant_name,
+                                 'Password': os_password}
+               }
         return self._create(url, body, "CL_ERROR_CODE", return_raw=True)
  
     def enqueuecopybuffer(self, queue_id, source_buffer_id, destination_buffer_id, 

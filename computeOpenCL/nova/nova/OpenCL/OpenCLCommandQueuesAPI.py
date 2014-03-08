@@ -25,12 +25,12 @@ class API(object):
         resp = self.rpc_api.ReleaseCommandQueue(id)
         return resp
 
-    def EnqueueReadBuffer(self, id, membuffer, bytecount, offset):
-        resp = self.rpc_api.EnqueueReadBuffer(id, membuffer, bytecount, offset)
+    def EnqueueReadBuffer(self, id, membuffer, bytecount, offset, containerid, swiftcontext):
+        resp = self.rpc_api.EnqueueReadBuffer(id, membuffer, bytecount, offset, containerid, swiftcontext)
         return resp
 
-    def EnqueueWriteBuffer(self, id, membuffer, bytecount, offset, data):
-        resp = self.rpc_api.EnqueueWriteBuffer(id, membuffer, bytecount, offset, data)
+    def EnqueueWriteBuffer(self, id, membuffer, bytecount, offset, dataobject, containerid, swiftcontext):
+        resp = self.rpc_api.EnqueueWriteBuffer(id, membuffer, bytecount, offset, dataobject, containerid, swiftcontext)
         return resp
 
     def EnqueueCopyBuffer(self, id, sourcebuffer, destinationbuffer,

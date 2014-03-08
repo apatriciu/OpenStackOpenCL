@@ -1,18 +1,8 @@
 # test OpenCL extension for nova compute service
 
-from novaclient import extension
-from novaclient.v1_1 import client
-from novaclient.v1_1 import services
-from novaclient import utils
-from novaclient.v1_1.contrib import list_extensions
-from novaclient.v1_1.contrib import opencldevices
-from credentials import get_nova_creds
+from openclclient import client
 
-creds = get_nova_creds()
-extensions = [
-    extension.Extension(opencldevices.__name__.split(".")[-1], opencldevices),
-    ]
-cl = client.Client(http_log_debug = True, extensions=extensions, **creds)
+cl = client.Client()
 
 # check openclinterface list
 listdevices = cl.opencldevices.list()

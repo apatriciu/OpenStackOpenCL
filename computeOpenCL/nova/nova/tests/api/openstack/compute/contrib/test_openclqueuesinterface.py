@@ -6,6 +6,7 @@ from nova.api.openstack.compute.contrib import openclinterface as os_openclinter
 import unittest
 import webob
 import binascii
+import SwiftTestUtils
 
 #from nova import test
 
@@ -68,6 +69,7 @@ class OpenclqueuesinterfaceTestCase(unittest.TestCase):
         self.assertEqual(len(listQueues), 0)
 
 class OpenclqueuesinterfaceBufferCopyTestCase(unittest.TestCase):
+    stu = SwiftTestUtils.SwiftUtils()
 
     def setUp(self):
         # super(OpenclinterfaceTestCase, self).setUp();
@@ -98,6 +100,15 @@ class OpenclqueuesinterfaceBufferCopyTestCase(unittest.TestCase):
         resp = self.Queues.create(req, body)['CreateResp']
         self.queueID = resp['id']
         self.assertEqual(resp['CL_ERROR_CODE'], 0)
+        # create swift data
+        self.RawString = bytearray('1111111111111111')
+        self.container = 'testcontainer'
+        self.stu.createcontainer(self.container)
+        self.objectname = 'testobject1'
+        self.stu.createobject(objectname = self.objectname,
+                              objectdata = self.RawString,
+                              container = self.container)
+        self.RawStringSize = len(self.RawString)
 
     def tearDown(self):
         body = None
@@ -112,41 +123,55 @@ class OpenclqueuesinterfaceBufferCopyTestCase(unittest.TestCase):
         # release the queue
         retErr = self.Queues.release(req, str(self.queueID), body)['CL_ERROR_CODE']
         self.assertEqual(retErr, 0)
+        self.stu.deleteobject(container = self.container,
+                              objectname = self.objectname)
+        self.stu.deletecontainer(self.container)
 
     def testWriteReadSameBuffer(self):
-        Data = bytearray('1111111111111111')
-        base64Data = binascii.b2a_base64( Data  )
         req = Request()
-        body = {'Data': base64Data, 'Buffer': self.bufferID1, 'Offset': 0, 'ByteCount': int(len(Data))}
+        body = {'ObjectId': self.objectname, 
+                'ContainerId': self.container,
+                'SwiftCOntext': self.stu.getcontext(),
+                'Buffer': self.bufferID1, 'Offset': 0, 'ByteCount': int(self.RawStringSize)}
         retErr = self.Queues.enqueuewritebuffer(req, str(self.queueID), body)['CL_ERROR_CODE']
         self.assertEqual(retErr, 0)
-        body = {'Buffer': self.bufferID1, 'Offset': 0, 'ByteCount': int(len(Data))}
+        body = {'Buffer': self.bufferID1, 'Offset': 0, 'ByteCount': int(self.RawStringSize), 
+                'ContainerId': self.container, 'SwiftContext': self.stu.getcontext()}
         resp = self.Queues.enqueuereadbuffer(req, str(self.queueID), body)['ReadBufferResp']
         self.assertEqual(resp['CL_ERROR_CODE'], 0)
-        respData = bytearray( binascii.a2b_base64(resp['Data']) )
+        respData = self.stu.getobjectdata(objectname = resp['DataObject'], 
+                                          container = self.container)
         self.assertEqual(respData, Data)
+        self.stu.deleteobject(objectname = resp['DataObject'], 
+                              container = self.container)
 
     def testWriteCopyRead2Buffers(self):
-        Data = bytearray('1111111111111111')
-        base64Data = binascii.b2a_base64( Data  )
         req = Request()
-        body = {'Data': base64Data, 'Buffer': self.bufferID1, 'Offset': 0, 'ByteCount': int(len(Data))}
+        body = {'ObjectId': self.objectname, 
+                'ContainerId': self.container,
+                'SwiftCOntext': self.stu.getcontext(),
+                'Buffer': self.bufferID1, 'Offset': 0, 'ByteCount': int(self.RawStringSize)}
         retErr = self.Queues.enqueuewritebuffer(req, str(self.queueID), body)['CL_ERROR_CODE']
         self.assertEqual(retErr, 0)
         body = {'SourceBuffer': self.bufferID1, 'DestinationBuffer': self.bufferID2, 
-                'SourceOffset': 0, 'DestinationOffset': 0, 'ByteCount': int(len(Data))}
+                'SourceOffset': 0, 'DestinationOffset': 0, 'ByteCount': int(self.RawStringSize)}
         retErr = self.Queues.enqueuecopybuffer(req, str(self.queueID), body)['CL_ERROR_CODE']
         self.assertEqual(retErr, 0)
         body = None
         retErr = self.Queues.enqueuebarrier(req, str(self.queueID), body)['CL_ERROR_CODE']
         self.assertEqual(retErr, 0)
-        body = {'Buffer': self.bufferID2, 'Offset': 0, 'ByteCount': int(len(Data))}
+        body = {'Buffer': self.bufferID2, 'Offset': 0, 'ByteCount': int(self.RawStringSize), 
+                'ContainerId': self.container, 'SwiftContext': self.stu.getcontext()}
         resp = self.Queues.enqueuereadbuffer(req, str(self.queueID), body)['ReadBufferResp']
         self.assertEqual(resp['CL_ERROR_CODE'], 0)
-        respData = bytearray( binascii.a2b_base64(resp['Data']) )
-        #self.assertEqual(respData, Data)
+        respData = self.stu.getobjectdata(objectname = resp['DataObject'], 
+                                          container = self.container)
+        self.assertEqual(respData, Data)
+        self.stu.deleteobject(objectname = resp['DataObject'], 
+                              container = self.container)
 
 class OpenclqueuesinterfaceKernelLaunchTestCase(unittest.TestCase):
+    stu = SwiftTestUtils.SwiftUtils()
 
     def setUp(self):
         # super(OpenclinterfaceTestCase, self).setUp();
@@ -198,6 +223,8 @@ class OpenclqueuesinterfaceKernelLaunchTestCase(unittest.TestCase):
         resp = self.Kernels.create(req, body)['CreateResp']
         self.kernelID = resp['id']
         self.assertEqual(resp['CL_ERROR_CODE'], 0)
+        self.container = 'testcontainer'
+        self.stu.createcontainer(self.container)
 
     def tearDown(self):
         body = None
@@ -216,6 +243,7 @@ class OpenclqueuesinterfaceKernelLaunchTestCase(unittest.TestCase):
         self.assertEqual(retErr, 0)
         retErr = self.Contexts.release(req, str(self.contextID), body)['CL_ERROR_CODE']
         self.assertEqual(retErr, 0)
+        self.stu.deletecontainer(self.container)
 
     def testLaunchKernel1(self):
         # det kernel parameters
@@ -236,10 +264,12 @@ class OpenclqueuesinterfaceKernelLaunchTestCase(unittest.TestCase):
         req = Request()
         retErr = self.Queues.enqueuendrangekernel(req, str(self.queueID), body)['CL_ERROR_CODE']
         DataIntControl = bytearray('22222222')
-        body = {'Buffer': self.bufferID1, 'Offset': 0, 'ByteCount': int(len(DataIntControl))}
+        body = {'Buffer': self.bufferID1, 'Offset': 0, 'ByteCount': int(len(DataIntControl)),
+                'ContainerId': self.container, 'SwiftContext': self.stu.getcontext()}
         resp = self.Queues.enqueuereadbuffer(req, str(self.queueID), body)['ReadBufferResp']
         self.assertEqual(resp['CL_ERROR_CODE'], 0)
-        respData = bytearray( binascii.a2b_base64(resp['Data']) )
+        respData = self.stu.getobjectdata(objectname = resp['DataObject'], 
+                                          container = self.container)
         self.assertEqual(respData, DataIntControl)
 
 if __name__ == "__main__":
