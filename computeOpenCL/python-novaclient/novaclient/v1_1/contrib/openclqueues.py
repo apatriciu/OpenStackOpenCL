@@ -77,6 +77,8 @@ class OpenCLQueuesManager(base.Manager):
     def enqueuereadbuffer(self, queue_id, buffer_id, ByteCount,
                           os_user_name, os_password,
                           os_tenant_name, container_id,
+                          swift_url,
+                          swift_token,
                           blocking_read=True, Offset=0,
                           wait_event_list=None, done_event=None):
         """
@@ -87,7 +89,9 @@ class OpenCLQueuesManager(base.Manager):
                 'Offset': Offset, 'ByteCount': ByteCount,
                 'SwiftContext': {'UserName': os_user_name, 
                                  'Password': os_password,
-                                  'TenantName': os_tenant_name}, 
+                                  'TenantName': os_tenant_name,
+                                  'SwiftUrl': swift_url,
+                                  'SwiftToken': swift_token}, 
                 'ContainerId': container_id}
         resp = self._create(url, body, "ReadBufferResp", return_raw=True)
         return (resp['DataObject'], resp['CL_ERROR_CODE'])
@@ -96,6 +100,8 @@ class OpenCLQueuesManager(base.Manager):
                            data_object_id, container_id, 
                            os_user_name, os_password,
                            os_tenant_name, 
+                           swift_url,
+                           swift_token,
                            blocking_write=True, Offset=0,
                            wait_event_list=None, done_event=None):
         """
@@ -109,7 +115,9 @@ class OpenCLQueuesManager(base.Manager):
                 'ContainerId': container_id, 
                 'SwiftContext': {'UserName': os_user_name,
                                  'TenantName': os_tenant_name,
-                                 'Password': os_password}
+                                 'Password': os_password,
+                                 'SwiftUrl': swift_url,
+                                 'SwiftToken': swift_token}
                }
         return self._create(url, body, "CL_ERROR_CODE", return_raw=True)
  

@@ -1,0 +1,19 @@
+#!/bin/bash
+SOURCE_DIR="../computeOpenCL"
+DEST_DIR="/opt/stack"
+
+NC_SUBDIR="/python-novaclient/novaclient/v1_1/contrib"
+SOURCE_DIRNC=$SOURCE_DIR$NC_SUBDIR
+DEST_DIRNC=$DEST_DIR$NC_SUBDIR
+cp $SOURCE_DIRNC/* $DEST_DIRNC/
+
+NC_SUBDIR="/python-novaclient/novaclient/tests/v1_1/contrib"
+SOURCE_DIRNC=$SOURCE_DIR$NC_SUBDIR
+DEST_DIRNC=$DEST_DIR$NC_SUBDIR
+cp $SOURCE_DIRNC/* $DEST_DIRNC/
+
+#OC_SUBDIR="/python-openclclient/openclclient"
+#SOURCE_DIROC=$SOURCE_DIR$NC_SUBDIR
+#DEST_DIROC=$DEST_DIR$NC_SUBDIR
+#cp $SOURCE_DIROC/* $DEST_DIROC/
+

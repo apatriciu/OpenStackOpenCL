@@ -52,7 +52,7 @@ print("Kernel ID : ", kernel_id)
 print("retErr : ", retErr)
 
 print("Show Program Properties")
-oc_kernel = cl.openclkernels.show(0)
+oc_kernel = cl.openclkernels.show(kernel_id)
 print oc_kernel
 
 print("Set argument 0")

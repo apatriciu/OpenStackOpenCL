@@ -6,6 +6,7 @@ class LaptopResponses:
     deviceProperties = {'CL_DEVICE_MAX_MEM_ALLOC_SIZE': 134217728, 
         'CL_DEVICE_MAX_COMPUTE_UNITS': 5, 
         'CL_DEVICE_AVAILABLE': 1, 
+        'CL_DEVICE_ENDIAN_LITTLE': 1, 
         'CL_DEVICE_LOCAL_MEM_SIZE': 32768, 
         'CL_DEVICE_NAME': 'BeaverCreek', 
         'CL_DEVICE_GLOBAL_MEM_SIZE': 268435456, 
@@ -34,7 +35,7 @@ class ServerGPUResponses:
 
 class TestDevices(unittest.TestCase):
     # define the expected response
-    deviceResponses = ServerGPUResponses()
+    deviceResponses = LaptopResponses()
 
     def setUp(self):
         retErr = PyOpenCLInterface.Initialize(self.deviceResponses.device_type)

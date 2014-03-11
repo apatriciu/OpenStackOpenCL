@@ -77,10 +77,12 @@ Step 4: Add the following environment variables on the client side describing th
     OS_AUTH_URL
     OS_TENANT_NAME
 
+Step 5: Copy the folder /python-openclclient/openclclient to TestcomputeOpenCL.
+
 Step 5: Run the samples in TestcomputeOpenCL.
 
 KNOWN ISSUES:
 - the OpenCLServer has to be manually started
-- the data transfer is curently implemented using amqp. The MemRead and Write operations should be 
-implemented using Swift
+- the data transfer is implemented using swift service.
+- the configuration supports only one GPU compute node
 

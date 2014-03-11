@@ -8,6 +8,8 @@ from nova.OpenCL import OpenCLBuffersAPI
 import binascii
 import PyTestObjects
 import sys
+import SwiftTestUtils
+
 
 class LaptopResources:
     listDevicesIDs = [0]
@@ -42,8 +44,12 @@ class TestKernelCall(unittest.TestCase):
     command_queues_interface = OpenCLCommandQueuesAPI.API()
     programs_interface = OpenCLProgramsAPI.API()
     kernels_interface = OpenCLKernelsAPI.API()
+    stu = SwiftTestUtils.SwiftUtils()
 
     def setUp(self):
+        #create swift container
+        self.container = 'testcontainer'
+        self.stu.createcontainer(self.container)
         self.contextID, retErr = self.contexts_interface.CreateContext(self.testResources.listDevicesIDs, 
                 self.testResources.dictProperties)
         self.assertEqual(retErr, 0)
@@ -59,7 +65,10 @@ class TestKernelCall(unittest.TestCase):
         self.bufferSizeInts = len(self.testByteArrayInts)
         zero = 0
         self.zeroByteArrayInts = PyTestObjects.VarAsByteArray(zero, "i")
-        self.zeroByteArrayIntsBase64 = str(binascii.b2a_base64(self.zeroByteArrayInts))
+        self.zero_object = 'zeroarray'
+        self.stu.createobject(objectname = self.zero_object,
+                              objectdata = self.zeroByteArrayInts,
+                              container = self.container)
         bufferCreateFlags = []
         self.bufferIntsID, retErr = self.buffers_interface.CreateBuffer(self.contextID, 
                 self.nGlobalThreads * self.bufferSizeInts, bufferCreateFlags)
@@ -116,13 +125,16 @@ class TestKernelCall(unittest.TestCase):
         self.assertEqual(retErr, 0)
         retErr = self.contexts_interface.ReleaseContext(self.contextID)
         self.assertEqual(retErr, 0)
-
+        self.stu.deletecontainer(self.container)
 
     def testKernelLaunch(self):
         """Launch the kernel"""
         # initialize the device memory to 0
         retErr = self.command_queues_interface.EnqueueWriteBuffer(self.queueID, self.bufferIntsID, 
-                             self.bufferSizeInts, 0, self.zeroByteArrayIntsBase64)
+                             self.bufferSizeInts, 0, 
+                             self.zero_object,
+                             self.container,
+                             self.stu.getcontext())
         self.assertEqual(retErr, 0)
         # set kernel parameters
         retErr = self.kernels_interface.KernelSetArgument(self.kernelID1, 
@@ -142,19 +154,27 @@ class TestKernelCall(unittest.TestCase):
                                                                     globalworksize, 
                                                                     localworksize);
         self.assertEqual(retErr, 0)
-        retDataBase64, retErr = self.command_queues_interface.EnqueueReadBuffer(self.queueID, 
-                                        self.bufferIntsID, self.bufferSizeInts, 0)
-        retData = bytearray(binascii.a2b_base64(retDataBase64))
+        dataobjectid, retErr = self.command_queues_interface.EnqueueReadBuffer(self.queueID, 
+                                        self.bufferIntsID, self.bufferSizeInts, 0,
+                                        self.container,
+                                        self.stu.getcontext())
+        # retrieve from swift
+        retData = self.stu.getobjectdata( objectname = dataobjectid, container = self.container )
         self.assertEqual(len(retData), self.bufferSizeInts)
         self.assertEqual(retErr, 0)
         retValue = PyTestObjects.ByteArrayAsVar( retData, "i" )
         self.assertEqual(retValue, self.intVal)
+        self.stu.deleteobject(container = self.container,
+                              objectname = dataobjectid)
 
     def testKernelLaunchWSharedMemory(self):
         # Launch kernel with shared memory
         # initialize the device memory to 0
         retErr = self.command_queues_interface.EnqueueWriteBuffer(self.queueID, self.bufferIntsID, 
-                                 self.bufferSizeInts, 0, self.zeroByteArrayIntsBase64)
+                                 self.bufferSizeInts, 0,
+                                 self.zero_object,
+                                 self.container,
+                                 self.stu.getcontext())
         self.assertEqual(retErr, 0)
         # set kernel parameters
         retErr = self.kernels_interface.KernelSetArgument(self.kernelID2, 
@@ -175,13 +195,17 @@ class TestKernelCall(unittest.TestCase):
                                              globalworksize, 
                                              localworksize);
         self.assertEqual(retErr, 0)
-        retDataBase64, retErr = self.command_queues_interface.EnqueueReadBuffer(self.queueID, 
-                                             self.bufferIntsID, self.bufferSizeInts, 0)
-        retData = bytearray(binascii.a2b_base64(retDataBase64))
+        dataobjectid, retErr = self.command_queues_interface.EnqueueReadBuffer(self.queueID, 
+                                             self.bufferIntsID, self.bufferSizeInts, 0,
+                                             self.container,
+                                             self.stu.getcontext())
+        retData = self.stu.getobjectdata( objectname = dataobjectid, container = self.container )
         self.assertEqual(len(retData), self.bufferSizeInts)
         self.assertEqual(retErr, 0)
         retValue = PyTestObjects.ByteArrayAsVar( retData, "i" )
         self.assertEqual(retValue, self.intVal)
+        self.stu.deleteobject(container = self.container,
+                              objectname = dataobjectid)
 
     def testKernelLaunchWSharedMemoryAndFloats(self):
         # Launch kernel with shared memory and float params
@@ -204,14 +228,18 @@ class TestKernelCall(unittest.TestCase):
                                                                     globalworksize, 
                                                                     localworksize);
         self.assertEqual(retErr, 0)
-        retDataBase64, retErr = self.command_queues_interface.EnqueueReadBuffer(self.queueID, 
+        dataobjectid, retErr = self.command_queues_interface.EnqueueReadBuffer(self.queueID, 
                                                                           self.bufferFloatsID, 
-                                                                          self.bufferSizeFloats, 0)
-        retData = bytearray(binascii.a2b_base64(retDataBase64))
+                                                                          self.bufferSizeFloats, 0,
+                                                                          self.container,
+                                                                          self.stu.getcontext())
+        retData = self.stu.getobjectdata( objectname = dataobjectid, container = self.container )
         self.assertEqual(len(retData), self.bufferSizeFloats)
         self.assertEqual(retErr, 0)
         retValue = PyTestObjects.ByteArrayAsVar( retData, "f" )
         self.assertEqual(retValue, 5.0)
+        self.stu.deleteobject(container = self.container,
+                              objectname = dataobjectid)
 
 if __name__ == "__main__":
     unittest.main()

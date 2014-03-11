@@ -8,4 +8,5 @@ cp $SOURCE_DIR/tests/OpenCL/* $DEST_DIR/tests/OpenCL/
 cp $SOURCE_DIR/tests/api/openstack/compute/contrib/* $DEST_DIR/tests/api/openstack/compute/contrib/
 #copy SwiftTestUtils.py to api test folder
 cp $SOURCE_DIR/tests/OpenCL/SwiftTestUtils.py $DEST_DIR/tests/api/openstack/compute/contrib/
+cp ../ServerSidePythonOpenCLInterface/tests/build/lib.linux-x86_64-2.7/PyTestObjects.so $DEST_DIR/tests/OpenCL/
 

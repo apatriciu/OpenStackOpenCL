@@ -73,23 +73,18 @@ class TestMems(unittest.TestCase):
         bufferAttribs = []
         buffer1ID, retErr = self.buffers_interface.CreateBuffer(self.contextID, buffer1Size, bufferAttribs)
         self.assertEqual(retErr, 0)
-        print "OK1"
         listBuffers = self.buffers_interface.ListBuffers()
         self.assertEqual(listBuffers, [buffer1ID])
-        print "OK1"
         buffer2Size = 1024
         bufferAttribs = []
         buffer2ID, retErr = self.buffers_interface.CreateBuffer(self.contextID, buffer2Size, bufferAttribs)
         self.assertEqual(retErr, 0)
-        print "OK1"
         listBuffers = self.buffers_interface.ListBuffers()
         self.assertEqual(listBuffers, [buffer1ID, buffer2ID])
-        print "OK1"
         buffer1Property, retErr = self.buffers_interface.GetBufferProperties(buffer1ID)
         self.assertEqual(buffer1Property['id'], buffer1ID)
         self.assertEqual(buffer1Property['Size'], buffer1Size)
         self.assertEqual(buffer1Property['Context'], self.contextID)
-        print "OK1"
         buffer2Property, retErr = self.buffers_interface.GetBufferProperties(buffer2ID)
         self.assertEqual(buffer2Property['id'], buffer2ID)
         self.assertEqual(buffer2Property['Size'], buffer2Size)

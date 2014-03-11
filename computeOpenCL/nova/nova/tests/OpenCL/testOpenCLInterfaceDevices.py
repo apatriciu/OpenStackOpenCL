@@ -52,7 +52,7 @@ class ServerGPUResponses:
 
 class TestDevices(unittest.TestCase):
     # define the expected response
-    deviceResponses = LaptopCPUResponses()
+    deviceResponses = LaptopResponses()
     devicesAPI = OpenCLDevicesAPI.API()
 
     def setUp(self):

@@ -144,7 +144,7 @@ class OpenCLQueues(object):
             Buffer = int(body['Buffer'])
             Offset = int(body['Offset'])
             ByteCount = int(body['ByteCount'])
-            ContainerId = body['ContainerId']
+            ContainerId = str(body['ContainerId'])
             SwiftContext = body['SwiftContext']
             Data, nErr = self.opencl_command_queues_api.EnqueueReadBuffer(int(id), 
                                                Buffer, ByteCount, Offset,
@@ -170,7 +170,7 @@ class OpenCLQueues(object):
             ByteCount = int(body['ByteCount'])
             DataObjectId = str(body['ObjectId'])
             ContainerId = str(body['ContainerId'])
-            SwiftContext = str(body['SwiftContext'])
+            SwiftContext = body['SwiftContext']
             nErr = self.opencl_command_queues_api.EnqueueWriteBuffer(int(id), 
                                   Buffer, ByteCount, 
                                   Offset, DataObjectId,
@@ -190,13 +190,13 @@ class OpenCLQueues(object):
         '''
         nErr = 0
         try:
-            sourcebuffer = body['SourceBuffer']
-            destinationbuffer = body['DestinationBuffer']
-            sourceoffset = body['SourceOffset']
-            destinationoffset = body['DestinationOffset']
-            bytecount = body['ByteCount']
+            sourcebuffer = int(body['SourceBuffer'])
+            destinationbuffer = int(body['DestinationBuffer'])
+            sourceoffset = int(body['SourceOffset'])
+            destinationoffset = int(body['DestinationOffset'])
+            bytecount = int(body['ByteCount'])
             nErr = self.opencl_command_queues_api.EnqueueCopyBuffer(int(id), 
-                                  sourcebuffer, destinationbuffer, 
+                                  sourcebuffer, destinationbuffer,
                                   sourceoffset, destinationoffset, bytecount)
         except:
             LOG.debug(_("Exception caught in OpenCLQueues.enqueuewritebuffer method %s"), sys.exc_info()[0])

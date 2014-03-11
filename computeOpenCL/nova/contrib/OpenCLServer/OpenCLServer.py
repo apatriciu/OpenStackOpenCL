@@ -11,6 +11,7 @@ import PyOpenCLInterface
 from kombu.mixins import ConsumerMixin
 from kombu.utils import uuid
 import binascii
+from swiftclient import client as cs
 
 def DispatchDevices(method, args):
     if method == 'ListDevices':
@@ -316,17 +317,19 @@ def DispatchCommandQueues(method, args):
             membuffer = int(args['MemBuffer'])
             bytecount = int(args['ByteCount'])
             offset = int(args['Offset'])
-            container = args['ContainerId']
+            swift_container = args['ContainerId']
             swift_context = args['SwiftContext']
-            url, token = cs.get_keystoneclient_2_0(auth_url, 
-                                                   swift_context[UserName],
-                                                   swift_context[Password],
-                                                   {'tenant_name': swift_context['TenantName']})
+            url = str(swift_context['SwiftUrl'])
+            token = str(swift_context['SwiftToken'])
+            #url, token = cs.get_keystoneclient_2_0(auth_url, 
+            #                                       swift_context['UserName'],
+            #                                       swift_context['Password'],
+            #                                       {'tenant_name': swift_context['TenantName']})
             RawData, RetErr = PyOpenCLInterface.EnqueueReadBuffer(nid, membuffer, bytecount, offset)
             # put data in the container
             data_length = len(RawData)
             DataObjectId = str(uuid())
-            cs.put_object(url = url, token = token, container = container, 
+            cs.put_object(url = url, token = token, container = swift_container, 
                           name = DataObjectId, contents = RawData, 
                           content_length = data_length)
         except:
@@ -344,13 +347,15 @@ def DispatchCommandQueues(method, args):
             swift_object = args['DataObjectId']
             swift_context = args['SwiftContext']
             # unpack the data
-            url, token = cs.get_keystoneclient_2_0(auth_url,
-                                                   swift_context[UserName],
-                                                   swift_context[Password],
-                                                   {'tenant_name': swift_context['TenantName']})
-            respDict, respObject = cs.get_object(url = url, token = token, container = container,
+            url = str(swift_context['SwiftUrl'])
+            token = str(swift_context['SwiftToken'])
+            #url, token = cs.get_keystoneclient_2_0(auth_url,
+            #                                       swift_context['UserName'],
+            #                                       swift_context['Password'],
+            #                                       {'tenant_name': swift_context['TenantName']})
+            respDict, respObject = cs.get_object(url = url, token = token, container = swift_container,
                                                  name = swift_object)
-            data = bytearray(respobject)
+            data = bytearray(respObject)
             result = PyOpenCLInterface.EnqueueWriteBuffer(nid, membuffer, bytecount, offset, data)
         except:
             print "Exception caught in DispatchCommandQueues.%s " % method
@@ -365,8 +370,9 @@ def DispatchCommandQueues(method, args):
             bytecount = int(args['ByteCount'])
             sourceoffset = int(args['SourceOffset'])
             destinationoffset = int(args['DestinationOffset'])
+            print args
             result = PyOpenCLInterface.EnqueueCopyBuffer(nid, sourcebuffer, destinationbuffer,
-                                  sourceoffset, destinationoffset, bytecount)
+                                  bytecount, sourceoffset, destinationoffset)
         except:
             print "Exception caught in DispatchCommandQueues.%s " % method
             print "Exception info %s " %  sys.exc_info()[0] 
@@ -572,6 +578,9 @@ class C(ConsumerMixin):
             print "Exception caught : %s" % sys.exc_info()[0]
         return
 
+#global vars
+auth_url = ""
+
 if __name__ == "__main__":
     from kombu import BrokerConnection
     from kombu.utils.debug import setup_logging
@@ -581,15 +590,26 @@ if __name__ == "__main__":
     configs = cfg.ConfigOpts()
     options = [ cfg.StrOpt('rabbit_host', default = 'localhost'),
                 cfg.StrOpt('rabbit_password', required = 'true'),
-                cfg.StrOpt('rabbit_user', default = 'guest'), 
-                sfg.StrOpt('auth_host', group = 'keystone_authtoken', default = 'local')]
+                cfg.StrOpt('rabbit_user', default = 'guest')]
     configs.register_opts( options )
+    configs.register_group( cfg.OptGroup('keystone_authtoken') )
+    configs.register_opt( cfg.StrOpt('auth_host', default = 'localhost'),
+                          group = 'keystone_authtoken' )
+    configs.register_opt( cfg.StrOpt('auth_port', default = '5000'),
+                          group = 'keystone_authtoken' )
+    configs.register_opt( cfg.StrOpt('auth_protocol', default = 'http'),
+                          group = 'keystone_authtoken' )
+    
     configs(sys.argv[1:])
 
     rh = configs.rabbit_host
     rp = configs.rabbit_password
     ru = configs.rabbit_user
-    auth_url = "http://" + configs.auth_host + ":35357/v2.0"
+    auth_url = (configs.keystone_authtoken.auth_protocol + "://" + 
+                configs.keystone_authtoken.auth_host + ":" + 
+                configs.keystone_authtoken.auth_port + "/v2.0/")
+
+    print auth_url
 
     strBroker = "amqp://" + ru + ":" + rp + "@" + rh + ":5672//"
 

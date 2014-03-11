@@ -10,6 +10,11 @@ from binascii import hexlify
 import random
 import SwiftTestUtils
 
+class LaptopResources:
+    listDevicesIDs = [0]
+    dictProperties = {}
+    device_type = "GPU"
+
 class TestQueuesMemCopy(unittest.TestCase):
     # define the expected response
     testResources = LaptopResources()
@@ -94,12 +99,12 @@ class TestQueuesMemCopy(unittest.TestCase):
         retErr = self.command_queues_interface.EnqueueCopyBuffer(self.queueID, 
                                                     self.bufferID, 
                                                     self.bufferID2, 
-                                                    self.bufferSize, 
-                                                    0, 0)
+                                                    0, 0,
+                                                    self.bufferSize)
         self.assertEqual(retErr, 0)
         retErr = self.command_queues_interface.EnqueueBarrier(self.queueID)
         self.assertEqual(retErr, 0)
-        retData, retErr = self.command_queues_interface.EnqueueReadBuffer(self.queueID, 
+        dataobjectid, retErr = self.command_queues_interface.EnqueueReadBuffer(self.queueID, 
                                                     self.bufferID2, self.bufferSize, 0, 
                                                     self.container, 
                                                     self.stu.getcontext() )

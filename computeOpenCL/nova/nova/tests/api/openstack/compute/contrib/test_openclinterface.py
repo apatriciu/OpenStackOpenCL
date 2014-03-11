@@ -4,7 +4,7 @@ import webob
 
 #from nova import test
 
-class LaptopResponses:
+class LaptopGPUResponses:
     listDevicesOnSystem = [0]
     listDevicesIDs = [{"Device": 0}]
     deviceProperties = {'CL_DEVICE_MAX_MEM_ALLOC_SIZE': 134217728,
@@ -74,7 +74,7 @@ class OpenclinterfaceDevicesAndContextsTestCase(unittest.TestCase):
 
     def setUp(self):
         super(OpenclinterfaceDevicesAndContextsTestCase, self).setUp()
-        self.deviceResponses = LaptopCPUResponses()
+        self.deviceResponses = LaptopGPUResponses()
         self.Devices = os_openclinterface.OpenCLDevices()
         self.Contexts = os_openclinterface.OpenCLContexts();
 

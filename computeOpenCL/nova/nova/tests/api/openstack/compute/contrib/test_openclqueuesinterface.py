@@ -123,15 +123,13 @@ class OpenclqueuesinterfaceBufferCopyTestCase(unittest.TestCase):
         # release the queue
         retErr = self.Queues.release(req, str(self.queueID), body)['CL_ERROR_CODE']
         self.assertEqual(retErr, 0)
-        self.stu.deleteobject(container = self.container,
-                              objectname = self.objectname)
         self.stu.deletecontainer(self.container)
 
     def testWriteReadSameBuffer(self):
         req = Request()
         body = {'ObjectId': self.objectname, 
                 'ContainerId': self.container,
-                'SwiftCOntext': self.stu.getcontext(),
+                'SwiftContext': self.stu.getcontext(),
                 'Buffer': self.bufferID1, 'Offset': 0, 'ByteCount': int(self.RawStringSize)}
         retErr = self.Queues.enqueuewritebuffer(req, str(self.queueID), body)['CL_ERROR_CODE']
         self.assertEqual(retErr, 0)
@@ -141,7 +139,7 @@ class OpenclqueuesinterfaceBufferCopyTestCase(unittest.TestCase):
         self.assertEqual(resp['CL_ERROR_CODE'], 0)
         respData = self.stu.getobjectdata(objectname = resp['DataObject'], 
                                           container = self.container)
-        self.assertEqual(respData, Data)
+        self.assertEqual(respData, self.RawString)
         self.stu.deleteobject(objectname = resp['DataObject'], 
                               container = self.container)
 
@@ -149,7 +147,7 @@ class OpenclqueuesinterfaceBufferCopyTestCase(unittest.TestCase):
         req = Request()
         body = {'ObjectId': self.objectname, 
                 'ContainerId': self.container,
-                'SwiftCOntext': self.stu.getcontext(),
+                'SwiftContext': self.stu.getcontext(),
                 'Buffer': self.bufferID1, 'Offset': 0, 'ByteCount': int(self.RawStringSize)}
         retErr = self.Queues.enqueuewritebuffer(req, str(self.queueID), body)['CL_ERROR_CODE']
         self.assertEqual(retErr, 0)
@@ -166,7 +164,7 @@ class OpenclqueuesinterfaceBufferCopyTestCase(unittest.TestCase):
         self.assertEqual(resp['CL_ERROR_CODE'], 0)
         respData = self.stu.getobjectdata(objectname = resp['DataObject'], 
                                           container = self.container)
-        self.assertEqual(respData, Data)
+        self.assertEqual(respData, self.RawString)
         self.stu.deleteobject(objectname = resp['DataObject'], 
                               container = self.container)
 

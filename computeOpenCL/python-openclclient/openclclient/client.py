@@ -1,7 +1,6 @@
 from novaclient import extension
 from novaclient.v1_1 import client
-from swift import client as cs
-from novaclient.v1_1 import services
+from swiftclient import client as cs
 from novaclient import utils
 from novaclient.v1_1.contrib import list_extensions
 from novaclient.v1_1.contrib import openclcontexts
@@ -17,23 +16,24 @@ import os
 import uuid 
 
 class Client(object):
-    def __init__(username = None, api_key = None, 
+    def __init__(self, username = None, api_key = None, 
                  auth_url = None, project_id = None,
                  tenant_name = None):
-        if (!username) :
+        if (username == None) :
             username = os.environ['OS_USERNAME']
-        if (!api_key) :
+        if (api_key == None) :
             api_key = os.environ['OS_PASSWORD']
-        if (!auth_url) :
+        if (auth_url == None) :
             auth_url = os.environ['OS_AUTH_URL']
-        if (!project_id) : 
+        if (project_id == None) : 
             project_id = os.environ['OS_TENANT_NAME']
-        if (!tenant_name) :
+        if (tenant_name == None) :
             tenant_name = os.environ['OS_TENANT_NAME']
         self.username = username
         self.api_key = api_key
         self.auth_url = auth_url
         self.tenant_name = tenant_name
+        self.project_id = project_id
         extensions = [
             extension.Extension(openclcontexts.__name__.split(".")[-1], openclcontexts),
             extension.Extension(opencldevices.__name__.split(".")[-1], opencldevices),
@@ -57,11 +57,11 @@ class Client(object):
         self.openclprograms = self.cl.openclprograms
         self.openclkernels = self.cl.openclkernels
         self.openclbuffers = self.cl.openclbuffers
-        self.openclqueues = self.OpenClQueues( self.cl, self.swift_url, self.swift_token, 
+        self.openclqueues = self.OpenCLQueues( self.cl, self.swift_url, self.swift_token, 
                                                self.username, self.api_key, self.tenant_name)
 
     class OpenCLQueues( object ):
-        def __init__( novaclient, swifturl, swifttoken, 
+        def __init__(self, novaclient, swifturl, swifttoken, 
                       username, password, tenant_name ):
             self.nc = novaclient
             self.swifturl = swifturl
@@ -69,35 +69,32 @@ class Client(object):
             self.username = username
             self.password = password
             self.tenant_name = tenant_name
-            def list(self):
-        """List all opencl queues."""
-        url = "/os-openclqueues"
-        resp = self._list(url, "Queues", obj_class=OpenCLQueueId)
-        listQueues = []
-        for queue in resp:
-            listQueues.append(queue.id)
-        return listQueues
+
+        def list(self):
+            return self.nc.openclqueues.list()
 
         def show(self, queue_id):
-            return self.nc.show(queue_id)
+            return self.nc.openclqueues.show(queue_id)
 
         def create(self, Device, Context, listProperties):
-            return self.nc.create(self, Device, Context, listProperties)
+            return self.nc.openclqueues.create(Device, Context, listProperties)
 
         def retain(self, queue_id):
-            return self.nc.retain(self, queue_id)
+            return self.nc.openclqueues.retain(queue_id)
 
         def release(self, queue_id):
-            return self.nc.release(self, queue_id)
+            return self.nc.openclqueues.release(queue_id)
         
         def enqueuereadbuffer(self, queue_id, buffer_id, ByteCount,
                               blocking_read=True, Offset=0,
                               wait_event_list=None, done_event=None):
             container_id = str(uuid.uuid4())
             cs.put_container(url = self.swifturl, token = self.swifttoken, container = container_id)
-            resp =  self.nc.enqueuereadbuffer(self, queue_id, buffer_id, ByteCount,
-                                              self.user_name, self.password,
+            resp =  self.nc.openclqueues.enqueuereadbuffer(queue_id, buffer_id, ByteCount,
+                                              self.username, self.password,
                                               self.tenant_name, container_id,
+                                              self.swifturl,
+                                              self.swifttoken,
                                               blocking_read, Offset,
                                               wait_event_list, done_event)
             # retrieve the object from swift
@@ -128,10 +125,12 @@ class Client(object):
                           name = object_id,
                           contents = data,
                           content_length = len(data))
-            resp = self.nc.enqueuewritebuffer(self, queue_id, buffer_id, ByteCount, 
+            resp = self.nc.openclqueues.enqueuewritebuffer(queue_id, buffer_id, ByteCount, 
                            object_id, container_id, 
-                           self.user_name, self.password,
+                           self.username, self.password,
                            self.tenant_name, 
+                           self.swifturl,
+                           self.swifttoken,
                            blocking_write, Offset,
                            wait_event_list, done_event)
             # delete the object
@@ -150,7 +149,7 @@ class Client(object):
                               blocking_copy=True, 
                               source_offset=0, destination_offset=0, 
                               wait_event_list=None, done_event=None):
-            return self.nc.enqueuecopybuffer(self, queue_id, source_buffer_id, 
+            return self.nc.openclqueues.enqueuecopybuffer(queue_id, source_buffer_id, 
                                              destination_buffer_id, 
                                              ByteCount, blocking_copy, 
                                              source_offset, destination_offset, 
@@ -159,18 +158,18 @@ class Client(object):
         def enqueuendrangekernel(self, queue_id, kernel_id, 
                                  global_size, global_offset, local_size,
                                  wait_event_list=None, done_event=None):
-            return self.nc.enqueuendrangekernel(self, queue_id, kernel_id, 
+            return self.nc.openclqueues.enqueuendrangekernel(queue_id, kernel_id, 
                                      global_size, global_offset, local_size,
                                      wait_event_list, done_event)
  
         def enqueuetask(self, queue_id, kernel_id, 
                       wait_event_list=None, done_event=None):
-            return self.nc.enqueuetask(self, queue_id, kernel_id, 
+            return self.nc.openclqueues.enqueuetask(queue_id, kernel_id, 
                       wait_event_list, done_event)
 
         def enqueuebarrier(self, queue_id):
-            return self.nc.enqueuebarrier(self, queue_id)
+            return self.nc.openclqueues.enqueuebarrier(queue_id)
  
         def finish(self, queue_id):
-            return self.nc.finish(self, queue_id)
+            return self.nc.openclqueues.finish(queue_id)
      
