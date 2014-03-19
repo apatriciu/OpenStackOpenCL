@@ -84,7 +84,7 @@ class OpenclbuffersinterfaceTestCase(unittest.TestCase):
         retErr = self.Buffers.retain(req, str(bufferID), body)['CL_ERROR_CODE']
         self.assertEqual(retErr, 0)
         retErr = self.Buffers.release(req, str(bufferID), body)['CL_ERROR_CODE']
-        self.assertEqual(retErr, 0)
+        self.assertEqual(retErr, 1)
         retErr = self.Buffers.release(req, str(bufferID), body)['CL_ERROR_CODE']
         self.assertEqual(retErr, 0)
         listBuffers = self.Buffers.index(req)['Buffers']

@@ -10,13 +10,13 @@ The interface consists of the following parts
 
 ComputeNode:
 - server side python programs
-    reside in $NOVA_DIR/nova/contrib/OpenCLServer
+    reside in $NOVA_DIR/nova/contrib/OpenCLNodeServer
 - a shared library PyOpenCLInterface.so that exposes OpenCL to python calls.
     
 Controller Node
 - nova compute api-extesion
     - WSGI extension - reside in $NOVA_DIR/nova/nova/api/openstack/compute/contrib
-      unit tests are in $NOVA_DIR.nova/nova/tests/api/openstack/compute/contrib
+      unit tests are in $NOVA_DIR/nova/nova/tests/api/openstack/compute/contrib
          these are not integrated yet into openstack tests but they are written 
          using pyton unittest module. The user should run the tests to ensure that
          the openCL interface is up.
@@ -25,7 +25,13 @@ Controller Node
          these are not integrated yet into openstack tests but they are written 
          using pyton unittest module. The user should run the tests to ensure that
          the openCL interface is up.
-- python client
+    - OpenCLProxy - manages multiple OpenCL compute nodes
+      resides in $NOVA_DIR/nova/contrib/OpenCLProxy
+      unit tests are in the same folder
+      When a OpenCLNodeServer starts it registers itself with the OpenCLProxy and its resources become available.
+      When the server is stoped it 'unregister' itself from the OpenCLProxy. All the resources associated with this
+      node server will be deleted.
+Python client
     python sources are in $NOVA_DIR/novaclient/v1_1/contrib
     small test programs $NOVA_DIR/novaclient/tests/v1_1/contrib
 
@@ -65,13 +71,17 @@ Step3: Install the controller components
   The rabbit options are loaded from the nova config file.
   You can hack and manually set them in class OpenCLRPCAPI.__init__(...)). 
 Step 3: Copy the client python files into the novaclient folder.
-Step 4: Run the server on the compute node
-  python OpenCLServer.py
-Step 5: Run the opencl unit tests in folders
+Step 4: Run the OpenCL proxy from
+  $ StartOpenCLProxy
+  By default the proxy uses the /etc/nova/nova.conf configuration file. This can be changed if required.
+Step 5: Run the server on the compute node
+  Go to the OpenCLNodeServer folder
+  $ ./StartServer
+Step 6: Run the opencl unit tests in folders
   /nova/nova/tests/OpenCL/
   /nova/nova/tests/api/openstack/compute/contrib/
 
-Step 4: Add the following environment variables on the client side describing the credentials
+Step 7: Add the following environment variables on the client side describing the credentials
     OS_USERNAME
     OS_PASSWORD
     OS_AUTH_URL
@@ -82,7 +92,5 @@ Step 5: Copy the folder /python-openclclient/openclclient to TestcomputeOpenCL.
 Step 5: Run the samples in TestcomputeOpenCL.
 
 KNOWN ISSUES:
-- the OpenCLServer has to be manually started
-- the data transfer is implemented using swift service.
-- the configuration supports only one GPU compute node
+- the OpenCLNodeServer and OpenCLProxy have to be manually started
 

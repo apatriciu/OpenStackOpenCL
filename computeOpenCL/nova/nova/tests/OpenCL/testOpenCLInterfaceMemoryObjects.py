@@ -21,12 +21,10 @@ class TestMems(unittest.TestCase):
         """Creates a new context"""
         self.contextID, retErr = self.contexts_interface.CreateContext(self.testResources.listDevicesIDs, self.testResources.dictProperties)
         self.assertEqual(retErr, 0)
-        pass
 
     def tearDown(self):
         retErr = self.contexts_interface.ReleaseContext(self.contextID)
         self.assertEqual(retErr, 0)
-        pass
 
     def testCreateMemBuffer(self):
         # create mem buffer

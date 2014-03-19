@@ -106,10 +106,11 @@ PyObject* _CL_RetainProgram(PyObject* args){
 
 PyObject* _CL_ReleaseProgram(PyObject* args){
   long ProgramID;
+  long count;
   if(!PyArg_ParseTuple(args, "l", &ProgramID)) return NULL;
   // release the program
-  if( !ReleaseProgram( ProgramID ) ) return NULL;
-  return Py_BuildValue("i", CL_SUCCESS);
+  count = ReleaseProgram( ProgramID );
+  return Py_BuildValue("i", count);
 }
 
 PyObject* 

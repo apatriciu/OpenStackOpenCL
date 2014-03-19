@@ -1,0 +1,5 @@
+#!/bin/bash
+
+python OpenCLNodeServer.py --config-file /etc/nova/nova.conf
+
+

@@ -64,6 +64,8 @@ class SwiftUtils(object):
         creds['UserName'] = os.environ["OS_USERNAME"]
         creds['Password'] = os.environ["OS_PASSWORD"]
         creds['TenantName'] = os.environ['OS_TENANT_NAME']
+        creds['SwiftUrl'] = self.swifturl
+        creds['SwiftToken'] = self.swifttoken
         return creds
 
 

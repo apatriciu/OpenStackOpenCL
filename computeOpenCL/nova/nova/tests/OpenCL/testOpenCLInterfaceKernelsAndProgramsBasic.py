@@ -167,7 +167,7 @@ class TestPrograms(unittest.TestCase):
         retErr = self.kernels_interface.RetainKernel(kernelID)
         self.assertEqual(retErr, 0)
         retErr = self.kernels_interface.ReleaseKernel(kernelID)
-        self.assertEqual(retErr, 0)
+        self.assertEqual(retErr, 1)
         retErr = self.kernels_interface.ReleaseKernel(kernelID)
         self.assertEqual(retErr, 0)
         listKernels = self.kernels_interface.ListKernels()

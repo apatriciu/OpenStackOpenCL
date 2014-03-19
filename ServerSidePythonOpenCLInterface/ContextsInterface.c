@@ -107,10 +107,11 @@ PyObject* _CL_RetainContext(PyObject* args){
 
 PyObject* _CL_ReleaseContext(PyObject* args){
   long ContextID;
+  long count;
   if(!PyArg_ParseTuple(args, "l", &ContextID)) return NULL;
   // retain the cl_context
-  if( !ReleaseContext( ContextID ) ) return NULL;
-  return Py_BuildValue("i", CL_SUCCESS);
+  count = ReleaseContext( ContextID );
+  return Py_BuildValue("i", count);
 }
 
 PyObject* 

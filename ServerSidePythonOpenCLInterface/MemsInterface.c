@@ -62,11 +62,12 @@ PyObject* _CL_RetainBuffer(PyObject* args){
 
 PyObject* _CL_ReleaseBuffer(PyObject* args){
   long BufferID;
+  long count;
 
   if(!PyArg_ParseTuple(args, "l", &BufferID)) return NULL;
   // retain the cl_context
-  if( !ReleaseMem( BufferID ) ) return NULL;
-  return Py_BuildValue("i", CL_SUCCESS);
+  count = ReleaseMem( BufferID );
+  return Py_BuildValue("i", count);
 }
 
 PyObject* 

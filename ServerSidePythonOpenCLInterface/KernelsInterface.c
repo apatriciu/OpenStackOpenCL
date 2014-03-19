@@ -74,10 +74,11 @@ PyObject* _CL_RetainKernel(PyObject* args){
 
 PyObject* _CL_ReleaseKernel(PyObject* args){
   long KernelID;
+  long count;
   if(!PyArg_ParseTuple(args, "l", &KernelID)) return NULL;
   // release the kernel
-  if( !ReleaseKernel( KernelID ) ) return NULL;
-  return Py_BuildValue("i", CL_SUCCESS);
+  count = ReleaseKernel( KernelID );
+  return Py_BuildValue("i", count);
 }
 
 PyObject* 

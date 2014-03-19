@@ -158,7 +158,7 @@ class OpenclinterfaceDevicesAndContextsTestCase(unittest.TestCase):
         retErr = self.Contexts.retain(req, str(resp['id']), body)['CL_ERROR_CODE']
         self.assertEqual(retErr, 0)
         retErr = self.Contexts.release(req, str(resp['id']), body)['CL_ERROR_CODE']
-        self.assertEqual(retErr, 0)
+        self.assertEqual(retErr, 1)
         retErr = self.Contexts.release(req, str(resp['id']), body)['CL_ERROR_CODE']
         self.assertEqual(retErr, 0)
         self.assertRaises(webob.exc.HTTPNotFound,

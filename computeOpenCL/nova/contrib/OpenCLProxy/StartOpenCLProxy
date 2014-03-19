@@ -1,0 +1,4 @@
+#!/bin/bash
+
+python OpenCLProxy.py --config-file /etc/nova/nova.conf
+

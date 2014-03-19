@@ -76,7 +76,6 @@ class TestContexts(unittest.TestCase):
             print "Exception caught:", sys.exc_info()[0]
             self.assertEqual(1, 0)
         # try to release again
-        self.assertRaises(PyOpenCLInterface.error, PyOpenCLInterface.ReleaseContext, contextID)
         self.assertRaises(PyOpenCLInterface.error, PyOpenCLInterface.RetainContext, contextID)
 
 if __name__ == "__main__":

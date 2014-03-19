@@ -169,15 +169,15 @@ extern "C" bool RetainContext(long id){
   return true;
 }
 
-extern "C" bool ReleaseContext(long id){
+extern "C" long ReleaseContext(long id){
   ContextMap::BaseClassIterator it = _contextMap.find(id);
   if(it == _contextMap.end())
-    return false;
+    return -1;
   long RefCount;
   it->second.Release(RefCount);
   if(RefCount <= 0)
     _contextMap.erase(id);
-  return true;
+  return RefCount;
 }
 
 extern "C" long GetContextID(cl_context pc){
@@ -225,15 +225,15 @@ extern "C" bool RetainCommandQueue(long id){
   return true;
 }
 
-extern "C" bool ReleaseCommandQueue(long id){
+extern "C" long ReleaseCommandQueue(long id){
   CommandQueueMap::BaseClassIterator it = _commandqueueMap.find(id);
   if(it == _commandqueueMap.end())
-    return false;
+    return -1;
   long RefCount;
   it->second.Release(RefCount);
   if(RefCount <= 0)
     _commandqueueMap.erase(id);
-  return true;
+  return RefCount;
 }
 
 extern "C" long GetCommandQueueID(cl_command_queue pc){
@@ -281,15 +281,15 @@ extern "C" bool RetainMem(long id){
   return true;
 }
 
-extern "C" bool ReleaseMem(long id){
+extern "C" long ReleaseMem(long id){
   MemMap::BaseClassIterator it = _memMap.find(id);
   if(it == _memMap.end())
-    return false;
+    return -1;
   long RefCount;
   it->second.Release(RefCount);
   if(RefCount <= 0)
     _memMap.erase(id);
-  return true;
+  return RefCount;
 }
 
 extern "C" long GetMemID(cl_mem pc){
@@ -337,15 +337,15 @@ extern "C" bool RetainProgram(long id){
   return true;
 }
 
-extern "C" bool ReleaseProgram(long id){
+extern "C" long ReleaseProgram(long id){
   ProgramMap::BaseClassIterator it = _programMap.find(id);
   if(it == _programMap.end())
-    return false;
+    return -1;
   long RefCount;
   it->second.Release(RefCount);
   if(RefCount <= 0)
     _programMap.erase(id);
-  return true;
+  return RefCount;
 }
 
 extern "C" long GetProgramID(cl_program pc){
@@ -393,15 +393,15 @@ extern "C" bool RetainKernel(long id){
   return true;
 }
 
-extern "C" bool ReleaseKernel(long id){
+extern "C" long ReleaseKernel(long id){
   KernelMap::BaseClassIterator it = _kernelMap.find(id);
   if(it == _kernelMap.end())
-    return false;
+    return -1;
   long RefCount;
   it->second.Release(RefCount);
   if(RefCount <= 0)
     _kernelMap.erase(id);
-  return true;
+  return RefCount;
 }
 
 extern "C" long GetKernelID(cl_kernel pc){

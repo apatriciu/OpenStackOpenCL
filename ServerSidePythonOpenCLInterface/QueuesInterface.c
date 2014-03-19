@@ -67,18 +67,16 @@ PyObject* _CL_RetainQueue(PyObject* args){
   cl_int nErr = CL_SUCCESS;
   long QueueID;
   if(!PyArg_ParseTuple(args, "l", &QueueID)) return NULL;
-  // retain the cl_context
   if( !RetainCommandQueue( QueueID ) ) return NULL;
   return Py_BuildValue("i", nErr);
 }
 
 PyObject* _CL_ReleaseQueue(PyObject* args){
-  cl_int nErr = CL_SUCCESS;
+  long count;
   long QueueID;
   if(!PyArg_ParseTuple(args, "l", &QueueID)) return NULL;
-  // retain the cl_context
-  if( !ReleaseCommandQueue( QueueID ) ) return NULL;
-  return Py_BuildValue("i", nErr);
+  count = ReleaseCommandQueue( QueueID );
+  return Py_BuildValue("i", count);
 }
 
 PyObject* 
