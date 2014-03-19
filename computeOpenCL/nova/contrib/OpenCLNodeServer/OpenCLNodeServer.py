@@ -10,16 +10,17 @@ from kombu.common import maybe_declare
 from kombu.pools import producers
 import binascii
 from swiftclient import client as cs
+from Dispatch import Dispatch
 
-def DispatchDevices(method, args):
-    if method == 'ListDevices':
+class DispatchDevices(Dispatch):
+    def ListDevices(self, args):
         nErr = 0
         try:
             result = PyOpenCLInterface.ListDevices()
         except:
             nErr = -128
         return result
-    if method == 'GetDeviceProperties':
+    def GetDeviceProperties(self, args):
         nid = int(args['id'])
         try:
             result = PyOpenCLInterface.GetDeviceProperties(nid)
@@ -28,10 +29,9 @@ def DispatchDevices(method, args):
             DeviceProperties = {}
             return (DeviceProperties, nErr)
         return result
-    return -128
 
-def DispatchContexts(method, args):
-    if method == 'ListContexts':
+class DispatchContexts(Dispatch):
+    def ListContexts(self, args):
         nErr = 0
         try:
             result = PyOpenCLInterface.ListContexts()
@@ -39,7 +39,7 @@ def DispatchContexts(method, args):
             result = []
             nErr = -128
         return (result, nErr)
-    if method == 'GetContextProperties':
+    def GetContextProperties(self, args):
         nid = int(args['id'])
         try:
             result = PyOpenCLInterface.GetContextProperties(nid)
@@ -48,7 +48,7 @@ def DispatchContexts(method, args):
             ContextProperties = {}
             return (ContextProperties, nErr)
         return result
-    if method == 'CreateContext':
+    def CreateContext(self, args):
         try:
             listDevices = args['Devices']
             properties = args['Properties']
@@ -56,24 +56,23 @@ def DispatchContexts(method, args):
         except:
             return -128
         return result
-    if method == 'ReleaseContext':
+    def ReleaseContext(self, args):
         nid = int(args['id'])
         try:
             result = PyOpenCLInterface.ReleaseContext(nid)
         except:
             return -128
         return result
-    if method == 'RetainContext':
+    def RetainContext(self, args):
         nid = int(args['id'])
         try:
             result = PyOpenCLInterface.RetainContext(nid)
         except:
             return -128
         return result
-    return -128
 
-def DispatchBuffers(method, args):
-    if method == 'ListBuffers':
+class DispatchBuffers(Dispatch):
+    def ListBuffers(self, args):
         nErr = 0
         try:
             result = PyOpenCLInterface.ListBuffers()
@@ -81,7 +80,7 @@ def DispatchBuffers(method, args):
             print "DISPATCHBUFFERS : Exception caught ListBuffers"
             nErr = -128
         return (result, nErr)
-    if method == 'GetBufferProperties':
+    def GetBufferProperties(self, args):
         nid = int(args['id'])
         try:
             result = PyOpenCLInterface.GetBufferProperties(nid)
@@ -90,7 +89,7 @@ def DispatchBuffers(method, args):
             BufferProperties = {}
             return (BufferProperties, nErr)
         return result
-    if method == 'CreateBuffer':
+    def CreateBuffer(self, args):
         try:
             context = int(args['Context'])
             size = int(args['Size'])
@@ -100,43 +99,40 @@ def DispatchBuffers(method, args):
             print "DISPATCHBUFFERS.CreateBuffer Exception Caught : %s" % sys.exc_info()[0]
             return -128
         return result
-    if method == 'ReleaseBuffer':
+    def ReleaseBuffer(self, args):
         nid = int(args['id'])
         try:
             result = PyOpenCLInterface.ReleaseBuffer(nid)
         except:
             return -128
         return result
-    if method == 'RetainBuffer':
+    def RetainBuffer(self, args):
         nid = int(args['id'])
         try:
             result = PyOpenCLInterface.RetainBuffer(nid)
         except:
             return -128
         return result
-    print "DISPATCHBUFFERS : Unknown Method"
-    return -128
 
-def DispatchPrograms(method, args):
-    if method == 'ListPrograms':
+class DispatchPrograms(Dispatch):
+    def ListPrograms(self, args):
         nErr = 0
         try:
             result = PyOpenCLInterface.ListPrograms()
         except:
             nErr = -128
         return (result, nErr)
-    if method == 'GetProgramProperties':
+    def GetProgramProperties(self, args):
         try:
             nid = int(args['id'])
             result = PyOpenCLInterface.GetProgramProperties(nid)
         except:
-            print "Exception caught in DispatchPrograms.%s " % method
-            print "Exception info %s " %  sys.exc_info()[0] 
+            print "DispatchPrograms exception %s " %  sys.exc_info()[0] 
             nErr = -128
             Properties = {}
             return (Properties, nErr)
         return result
-    if method == 'CreateProgram':
+    def CreateProgram(self, args):
         try:
             context = int(args['Context'])
             programStringsList = args['ProgramStrings']
@@ -145,101 +141,90 @@ def DispatchPrograms(method, args):
                 programStrings.append(str(stru))
             result = PyOpenCLInterface.CreateProgram(context, programStrings)
         except:
-            print "Exception caught in DispatchPrograms.%s " % method
-            print "Exception info %s " %  sys.exc_info()[0] 
+            print "DispatchPrograms exception %s " %  sys.exc_info()[0] 
             return -128
         return result
-    if method == 'ReleaseProgram':
+    def ReleaseProgram(self, args):
         try:
             nid = int(args['id'])
             result = PyOpenCLInterface.ReleaseProgram(nid)
         except:
-            print "Exception caught in DispatchPrograms.%s " % method
-            print "Exception info %s " %  sys.exc_info()[0] 
+            print "DispatchPrograms exception %s " %  sys.exc_info()[0] 
             return -128
         return result
-    if method == 'RetainProgram':
+    def RetainProgram(self, args):
         try:
             nid = int(args['id'])
             result = PyOpenCLInterface.RetainProgram(nid)
         except:
-            print "Exception caught in DispatchPrograms.%s " % method
-            print "Exception info %s " %  sys.exc_info()[0] 
+            print "DispatchPrograms exception %s " %  sys.exc_info()[0] 
             return -128
         return result
-    if method == 'BuildProgram':
+    def BuildProgram(self, args):
         try:
             nid = int(args['id'])
             listDevices = args['Devices']
             buildOptions = args['Options']
             result = PyOpenCLInterface.BuildProgram(nid, listDevices, buildOptions)
         except:
-            print "Exception caught in DispatchPrograms.%s " % method
-            print "Exception info %s " %  sys.exc_info()[0] 
+            print "DispatchPrograms exception %s " %  sys.exc_info()[0] 
             return -128
         return result
-    if method == 'GetProgramBuildInfo':
+    def GetProgramBuildInfo(self, args):
         try:
             nid = int(args['id'])
             device = int(args['Device'])
             buildInfo = args['BuildInfo']
             result = PyOpenCLInterface.GetProgramBuildInfo(nid, device, buildInfo)
         except:
-            print "Exception caught in DispatchPrograms.%s " % method
-            print "Exception info %s " %  sys.exc_info()[0] 
+            print "DispatchPrograms exception %s " %  sys.exc_info()[0] 
             return -128
         return result
-    print "DISPATCHPROGRAMS : Unknown Method"
-    return -128
 
-def DispatchKernels(method, args):
-    if method == 'ListKernels':
+class DispatchKernels(Dispatch):
+    def ListKernels(self, args):
         nErr = 0
         try:
             result = PyOpenCLInterface.ListKernels()
         except:
             nErr = -128
         return (result, nErr)
-    if method == 'GetKernelProperties':
+    def GetKernelProperties(self, args):
         try:
             nid = int(args['id'])
             result = PyOpenCLInterface.GetKernelProperties(nid)
         except:
-            print "Exception caught in DispatchKernels.%s " % method
-            print "Exception info %s " %  sys.exc_info()[0] 
+            print "DispatchKernels exception : %s " %  sys.exc_info()[0] 
             nErr = -128
             Properties = {}
             return (Properties, nErr)
         return result
-    if method == 'CreateKernel':
+    def CreateKernel(self, args):
         try:
             program = int(args['Program'])
             kernel_name = str(args['KernelName'])
             result = PyOpenCLInterface.CreateKernel(program, kernel_name)
         except:
-            print "Exception caught in DispatchKernels.%s " % method
-            print "Exception info %s " %  sys.exc_info()[0] 
+            print "DispatchKernels exception : %s " %  sys.exc_info()[0] 
             return -128
         return result
-    if method == 'ReleaseKernel':
+    def ReleaseKernel(self, args):
         try:
             nid = int(args['id'])
             result = PyOpenCLInterface.ReleaseKernel(nid)
         except:
-            print "Exception caught in DispatchKernels.%s " % method
-            print "Exception info %s " %  sys.exc_info()[0] 
+            print "DispatchKernels exception : %s " %  sys.exc_info()[0] 
             return -128
         return result
-    if method == 'RetainKernel':
+    def RetainKernel(self, args):
         try:
             nid = int(args['id'])
             result = PyOpenCLInterface.RetainKernel(nid)
         except:
-            print "Exception caught in DispatchKernel.%s " % method
-            print "Exception info %s " %  sys.exc_info()[0] 
+            print "DispatchKernels exception : %s " %  sys.exc_info()[0] 
             return -128
         return result
-    if method == 'KernelSetArgument':
+    def KernelSetArgument(self, args):
         try:
             nid = int(args['id'])
             paramIndex = int(args['ParamIndex'])
@@ -255,62 +240,55 @@ def DispatchKernels(method, args):
                 paramDict = {'HostValue': binArray}
             result = PyOpenCLInterface.KernelSetArgument(nid, paramIndex, paramDict)
         except:
-            print "Exception caught in DispatchKernels.%s " % method
-            print "Exception info %s " %  sys.exc_info()[0] 
+            print "DispatchKernels exception : %s " %  sys.exc_info()[0] 
             return -128
         return result
-    print "DISPATCHPROGRAMS : Unknown Method"
-    return -128
 
-def DispatchCommandQueues(method, args):
-    if method == 'ListCommandQueues':
+class DispatchCommandQueues(Dispatch):
+    def ListCommandQueues(self, args):
         nErr = 0
         try:
             result = PyOpenCLInterface.ListQueues()
         except:
             nErr = -128
         return (result, nErr)
-    if method == 'GetCommandQueueProperties':
+    def GetCommandQueueProperties(self, args):
         try:
             nid = int(args['id'])
             result = PyOpenCLInterface.GetQueueProperties(nid)
         except:
-            print "Exception caught in DispatchCommandQueues.%s " % method
-            print "Exception info %s " %  sys.exc_info()[0] 
+            print "DispatchCommandQueues exception : %s " %  sys.exc_info()[0] 
             nErr = -128
             Properties = {}
             return (Properties, nErr)
         return result
-    if method == 'CreateCommandQueue':
+    def CreateCommandQueue(self, args):
         try:
             context = int(args['Context'])
             device = int(args['Device'])
             createFlags = args['Properties']
             result = PyOpenCLInterface.CreateQueue(context, device, createFlags)
         except:
-            print "Exception caught in DispatchCommandQueues.%s " % method
-            print "Exception info %s " %  sys.exc_info()[0] 
+            print "DispatchCommandQueues exception : %s " %  sys.exc_info()[0] 
             return -128
         return result
-    if method == 'ReleaseCommandQueue':
+    def ReleaseCommandQueue(self, args):
         try:
             nid = int(args['id'])
             result = PyOpenCLInterface.ReleaseQueue(nid)
         except:
-            print "Exception caught in DispatchQueue.%s " % method
-            print "Exception info %s " %  sys.exc_info()[0] 
+            print "DispatchCommandQueues exception : %s " %  sys.exc_info()[0] 
             return -128
         return result
-    if method == 'RetainCommandQueue':
+    def RetainCommandQueue(self, args):
         try:
             nid = int(args['id'])
             result = PyOpenCLInterface.RetainQueue(nid)
         except:
-            print "Exception caught in DispatchQueues.%s " % method
-            print "Exception info %s " %  sys.exc_info()[0] 
+            print "DispatchCommandQueues exception : %s " %  sys.exc_info()[0] 
             return -128
         return result
-    if method == 'EnqueueReadBuffer':
+    def EnqueueReadBuffer(self, args):
         try:
             nid = int(args['id'])
             membuffer = int(args['MemBuffer'])
@@ -332,11 +310,10 @@ def DispatchCommandQueues(method, args):
                           name = DataObjectId, contents = RawData, 
                           content_length = data_length)
         except:
-            print "Exception caught in DispatchCommandQueues.%s " % method
-            print "Exception info %s " %  sys.exc_info()[0] 
+            print "DispatchCommandQueues exception : %s " %  sys.exc_info()[0] 
             return -128
         return (DataObjectId, RetErr)
-    if method == 'EnqueueWriteBuffer':
+    def EnqueueWriteBuffer(self, args):
         try:
             nid = int(args['id'])
             membuffer = int(args['MemBuffer'])
@@ -357,11 +334,10 @@ def DispatchCommandQueues(method, args):
             data = bytearray(respObject)
             result = PyOpenCLInterface.EnqueueWriteBuffer(nid, membuffer, bytecount, offset, data)
         except:
-            print "Exception caught in DispatchCommandQueues.%s " % method
-            print "Exception info %s " %  sys.exc_info()[0] 
+            print "DispatchCommandQueues exception : %s " %  sys.exc_info()[0] 
             return -128
         return result
-    if method == 'EnqueueCopyBuffer':
+    def EnqueueCopyBuffer(self, args):
         try:
             nid = int(args['id'])
             sourcebuffer = int(args['SourceBuffer'])
@@ -373,11 +349,10 @@ def DispatchCommandQueues(method, args):
             result = PyOpenCLInterface.EnqueueCopyBuffer(nid, sourcebuffer, destinationbuffer,
                                   bytecount, sourceoffset, destinationoffset)
         except:
-            print "Exception caught in DispatchCommandQueues.%s " % method
-            print "Exception info %s " %  sys.exc_info()[0] 
+            print "DispatchCommandQueues exception : %s " %  sys.exc_info()[0] 
             return -128
         return result
-    if method == 'EnqueueNDRangeKernel':
+    def EnqueueNDRangeKernel(self, args):
         try:
             nid = int(args['id'])
             kernel = int(args['Kernel'])
@@ -386,40 +361,34 @@ def DispatchCommandQueues(method, args):
             lws = args['LWS']
             result = PyOpenCLInterface.EnqueueNDRangeKernel(nid, kernel, gwo, gws, lws)
         except:
-            print "Exception caught in DispatchCommandQueues.%s " % method
-            print "Exception info %s " %  sys.exc_info()[0] 
+            print "DispatchCommandQueues exception : %s " %  sys.exc_info()[0] 
             return -128
         return result
-    if method == 'EnqueueTask':
+    def EnqueueTask(self, args):
         try:
             nid = int(args['id'])
             kernel = int(args['Kernel'])
             result = PyOpenCLInterface.EnqueueTask(nid, kernel)
         except:
-            print "Exception caught in DispatchCommandQueues.%s " % method
-            print "Exception info %s " %  sys.exc_info()[0] 
+            print "DispatchCommandQueues exception : %s " %  sys.exc_info()[0] 
             return -128
         return result
-    if method == 'EnqueueBarrier':
+    def EnqueueBarrier(self, args):
         try:
             nid = int(args['id'])
             result = PyOpenCLInterface.EnqueueBarrier(nid)
         except:
-            print "Exception caught in DispatchCommandQueues.%s " % method
-            print "Exception info %s " %  sys.exc_info()[0] 
+            print "DispatchCommandQueues exception : %s " %  sys.exc_info()[0] 
             return -128
         return result
-    if method == 'Finish':
+    def Finish(self, args):
         try:
             nid = int(args['id'])
             result = PyOpenCLInterface.Finish(nid)
         except:
-            print "Exception caught in DispatchCommandQueues.%s " % method
-            print "Exception info %s " %  sys.exc_info()[0] 
+            print "DispatchCommandQueues exception : %s " %  sys.exc_info()[0] 
             return -128
         return result
-    print "DISPATCHPROGRAMS : Unknown Method"
-    return -128
 
 class C(ConsumerMixin):
     def __init__(self, connection, broker_url, OpenCLNodeID):
@@ -492,6 +461,22 @@ class C(ConsumerMixin):
                 Consumer( self.queue_opencl_command_queues, accept = ['json'], callbacks = [self.on_command_queues_message]),
                 Consumer( self.queue_opencl_notify, accept = ['json'], callbacks = [self.on_message])]
 
+    def CallDispatchAndReply(self, body, dispatchobject):
+        respTarget = body['Source']
+        respQueue = body['RespQueue']
+        method = body['Method']
+        args = body['args']
+        # create the response connection
+        resp_connection = BrokerConnection(respTarget)
+        resp_queue = resp_connection.SimpleQueue(respQueue,
+                                  queue_opts = {'durable': False, 'auto_delete': True},
+                                  exchange_opts = {'delivery_mode' : 1,
+                                                   'auto_delete' : True,
+                                                   'durable' : False})
+        payload = {"Result": dispatchobject.dispatch(method, args)}
+        resp_queue.put(payload, serializer='json')
+        resp_queue.close()
+ 
     def on_message(self, body, message):
         message.ack()
         return
@@ -501,20 +486,7 @@ class C(ConsumerMixin):
         print ("notify: RECEIVED COMMAND QUEUES MSG - body: %r" % (body,))
         print ("notify: RECEIVED COMMAND QUEUES MSG - message: %r" % (message,))
         try:
-            respTarget = body['Source']
-            respQueue = body['RespQueue']
-            method = body['Method']
-            args = body['args']
-            # create the response connection
-            resp_connection = BrokerConnection(respTarget)
-            resp_queue = resp_connection.SimpleQueue(respQueue,
-                                  queue_opts = {'durable': False, 'auto_delete': True},
-                                  exchange_opts = {'delivery_mode' : 1,
-                                                   'auto_delete' : True,
-                                                   'durable' : False})
-            payload = {"Result": DispatchCommandQueues(method, args)}
-            resp_queue.put(payload, serializer='json')
-            resp_queue.close()
+            self.CallDispatchAndReply(body, DispatchCommandQueues())
         except:
             print "Exception caught : %s" % sys.exc_info()[0]
         return
@@ -524,20 +496,7 @@ class C(ConsumerMixin):
         print ("notify: RECEIVED DEVICES MSG - body: %r" % (body,))
         print ("notify: RECEIVED DEVICES MSG - message: %r" % (message,))
         try:
-            respTarget = body['Source']
-            respQueue = body['RespQueue']
-            method = body['Method']
-            args = body['args']
-            # create the response connection
-            resp_connection = BrokerConnection(respTarget)
-            resp_queue = resp_connection.SimpleQueue(respQueue,
-                                  queue_opts = {'durable': False, 'auto_delete': True},
-                                  exchange_opts = {'delivery_mode' : 1,
-                                                   'auto_delete' : True,
-                                                   'durable' : False})
-            payload = {"Result": DispatchDevices(method, args)}
-            resp_queue.put(payload, serializer='json')
-            resp_queue.close()
+            self.CallDispatchAndReply(body, DispatchDevices())
         except:
             print "Exception caught : %s" % sys.exc_info()[0]
         return
@@ -547,20 +506,7 @@ class C(ConsumerMixin):
         print ("notify: RECEIVED CONTEXTS MSG - message: %r" % (message,))
         message.ack()
         try:
-            respTarget = body['Source']
-            respQueue = body['RespQueue']
-            method = body['Method']
-            args = body['args']
-            # create the response connection
-            resp_connection = BrokerConnection(respTarget)
-            resp_queue = resp_connection.SimpleQueue(respQueue,
-                                  queue_opts = {'durable': False, 'auto_delete': True},
-                                  exchange_opts = {'delivery_mode' : 1,
-                                                   'auto_delete' : True,
-                                                   'durable' : False})
-            payload = {"Result": DispatchContexts(method, args)}
-            resp_queue.put(payload, serializer='json')
-            resp_queue.close()
+            self.CallDispatchAndReply(body, DispatchContexts())
         except:
             print "Exception caught : %s" % sys.exc_info()[0]
         return
@@ -570,20 +516,7 @@ class C(ConsumerMixin):
         print ("notify: RECEIVED BUFFERS MSG - message: %r" % (message,))
         message.ack()
         try:
-            respTarget = body['Source']
-            respQueue = body['RespQueue']
-            method = body['Method']
-            args = body['args']
-            # create the response connection
-            resp_connection = BrokerConnection(respTarget)
-            resp_queue = resp_connection.SimpleQueue(respQueue,
-                                  queue_opts = {'durable': False, 'auto_delete': True},
-                                  exchange_opts = {'delivery_mode' : 1,
-                                                   'auto_delete' : True,
-                                                   'durable' : False})
-            payload = {"Result": DispatchBuffers(method, args)}
-            resp_queue.put(payload, serializer='json')
-            resp_queue.close()
+            self.CallDispatchAndReply(body, DispatchBuffers())
         except:
             print "Exception caught : %s" % sys.exc_info()[0]
         return
@@ -593,20 +526,7 @@ class C(ConsumerMixin):
         print ("notify: RECEIVED PROGRAMS MSG - message: %r" % (message,))
         message.ack()
         try:
-            respTarget = body['Source']
-            respQueue = body['RespQueue']
-            method = body['Method']
-            args = body['args']
-            # create the response connection
-            resp_connection = BrokerConnection(respTarget)
-            resp_queue = resp_connection.SimpleQueue(respQueue,
-                                  queue_opts = {'durable': False, 'auto_delete': True},
-                                  exchange_opts = {'delivery_mode' : 1,
-                                                   'auto_delete' : True,
-                                                   'durable' : False})
-            payload = {"Result": DispatchPrograms(method, args)}
-            resp_queue.put(payload, serializer='json')
-            resp_queue.close()
+            self.CallDispatchAndReply(body, DispatchPrograms())
         except:
             print "Exception caught : %s" % sys.exc_info()[0]
         return
@@ -616,20 +536,7 @@ class C(ConsumerMixin):
         print ("notify: RECEIVED KERNELS MSG - message: %r" % (message,))
         message.ack()
         try:
-            respTarget = body['Source']
-            respQueue = body['RespQueue']
-            method = body['Method']
-            args = body['args']
-            # create the response connection
-            resp_connection = BrokerConnection(respTarget)
-            resp_queue = resp_connection.SimpleQueue(respQueue,
-                                  queue_opts = {'durable': False, 'auto_delete': True},
-                                  exchange_opts = {'delivery_mode' : 1,
-                                                   'auto_delete' : True,
-                                                   'durable' : False})
-            payload = {"Result": DispatchKernels(method, args)}
-            resp_queue.put(payload, serializer='json')
-            resp_queue.close()
+            self.CallDispatchAndReply(body, DispatchKernels())
         except:
             print "Exception caught : %s" % sys.exc_info()[0]
         return
